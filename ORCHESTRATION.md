@@ -100,7 +100,12 @@ force push, diff before apply, trash instead of rm.
 [DONE]    Chrome dashboard wording read back: description, homepage and support URL in the draft equal listing.md   Evidence: Playwright snapshot 2026-09-12 14:54 UTC, normalised text comparison true
 [DONE]    That metadata submission was cancelled (by the owner, dashboard menu)   Evidence: store-status run 34700662694: submittedItemRevisionStatus CANCELLED crxVersion 0.0.7; public listing still carries the old text ("bypass", DRM brand names) as of 14:55 UTC
 [DONE]    Chrome resubmitted 2026-09-12 15:02 UTC with the corrected text, store icon store-icon-128-chrome.png, screenshots 01/02/03 (commit 0666123), small promo tile promo-440x280.png, auto-publish on   Evidence: dashboard "Item saved." 15:02 UTC and submit dialog 15:02:47 UTC (coordinator); store-status run 34701046316 at 15:03 UTC: published 0.0.7 PUBLISHED, submitted 0.0.7 PENDING_REVIEW. Marquee slot empty (no 1400x560 file exists)
+[DONE]    Chrome resubmitted again with the plain-language description from listing.md ba79fc8 (922 chars; images kept in the draft), auto-publish on   Evidence: dashboard "Item saved." 18:26 UTC; status run 34711220198 submitted 0.0.7 PENDING_REVIEW
 [PENDING] Chrome review of that resubmission   waits on: Google. If it is still open when 1.0.0 is ready, cancel it and resubmit with the package
+[DONE]    Edge resubmitted with the same description   Evidence: Partner Center "UPDATE 0.0.7 In review" 2026-09-12 ~18:40 UTC, Store Listings table shows the new first line
+[PENDING] Edge certification of that resubmission   waits on: Microsoft
+[BLOCKED] AMO description update   Reason: run 34710837315: "PATCH /addons/addon/save-media/ throttled (429), AMO asks for 51538 s: {"detail":"Request was throttled. Expected available in 51538 seconds."}"; rerun 2026-09-13 after 09:00 UTC together with B's previews
+[PENDING] Edge logo, screenshots and tile   waits on: the owner in Partner Center with the native file picker (scripted uploads answer "Something went wrong"); copies lie where the dialog opens, /Users/ancplua/Developer/save-media/
 [DONE]    AMO icon set from packages/extension/store-assets/logo/logo-300.png   Evidence: store-status run 34701212566 (amo-icon-apply): before "default-64.png (AMO default, none uploaded)", after user-media/addon_icons/3017/3017523-64.png; public API GET /addons/addon/save-media/ read back with the new icon_url
 [DONE]    AMO listing screenshots set (there were none): 01/02/03 at 1280x800, positions 0-2   Evidence: store-status run 34701288123 (amo-previews-apply), public API previews ids 408167, 408168, 408169
 [DONE]    Edge listing text, single purpose, storage justification, privacy URL corrected and submitted 2026-09-12
@@ -119,6 +124,7 @@ force push, diff before apply, trash instead of rm.
 ### yt-transcript
 
 ```
+[DONE]    Chrome 3.2.1 switched from auto-publish to "Defer publish", review continues   Evidence: dialog "Defer publishing?" confirmed 18:28 UTC. Reason: the owner found two bugs in 3.2.1 in Edge 152 (toolbar click opens no panel on some watch pages; wrong language track on one talk), see ~/Desktop/yt-transcript-notfall-prompt.md. After the review: bugs only in Edge, publish 3.2.1 in Chrome by hand; bugs also in Chrome, upload 3.2.2 and discard the staged 3.2.1
 [DONE]    Chrome 3.2.1 submitted: description without browser names, store icon, 5 UI screenshots, 440x280 tile, 1400x560 marquee, auto-publish   Evidence: status run 34701679765 (15:15 UTC) published 3.1.0, submitted 3.2.1 PENDING_REVIEW; release run 34701390181 (chrome update)
 [DONE]    Firefox 3.2.1 submitted   Evidence: release run 34701391394
 [DONE]    Edge package from 3.2.1 without tabCapture/offscreen (manifest.edge.json, own dist without offscreen/)   Evidence: yt-transcript f735749, ci run 34707926465; Microsoft policy 1.6 forbids unused permissions, the form warns "Requesting an unnecessary permission will result in this version being rejected"
