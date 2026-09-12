@@ -81,12 +81,15 @@ force push, diff before apply, trash instead of rm.
           Evidence: store-status run 34699295187 (14:26 UTC) and run 34700110756: submittedItemRevisionStatus PENDING_REVIEW crxVersion 0.0.7, published 0.0.7 unchanged (metadata-only submission)
 [DONE]    Chrome dashboard wording read back: description, homepage and support URL in the draft equal listing.md   Evidence: Playwright snapshot 2026-09-12 14:54 UTC, normalised text comparison true
 [DONE]    That metadata submission was cancelled (by the owner, dashboard menu)   Evidence: store-status run 34700662694: submittedItemRevisionStatus CANCELLED crxVersion 0.0.7; public listing still carries the old text ("bypass", DRM brand names) as of 14:55 UTC
-[PENDING] Resubmit Chrome with corrected text plus new screenshots and store icon in one submission   waits on: the owner's go (draft being prepared 2026-09-12)
-[PENDING] AMO icon upload (listing shows the default icon)   waits on: a `store-publish firefox icon` subcommand or a PATCH with the AMO key; then run through store-status.yml
+[DONE]    Chrome resubmitted 2026-09-12 15:02 UTC with the corrected text, store icon store-icon-128-chrome.png, screenshots 01/02/03 (commit 0666123), small promo tile promo-440x280.png, auto-publish on   Evidence: dashboard "Item saved." 15:02 UTC and submit dialog 15:02:47 UTC (coordinator); store-status run 34701046316 at 15:03 UTC: published 0.0.7 PUBLISHED, submitted 0.0.7 PENDING_REVIEW. Marquee slot empty (no 1400x560 file exists)
+[PENDING] Chrome review of that resubmission   waits on: Google. If it is still open when 1.0.0 is ready, cancel it and resubmit with the package
+[DONE]    AMO icon set from packages/extension/store-assets/logo/logo-300.png   Evidence: store-status run 34701212566 (amo-icon-apply): before "default-64.png (AMO default, none uploaded)", after user-media/addon_icons/3017/3017523-64.png; public API GET /addons/addon/save-media/ read back with the new icon_url
+[DONE]    AMO listing screenshots set (there were none): 01/02/03 at 1280x800, positions 0-2   Evidence: store-status run 34701288123 (amo-previews-apply), public API previews ids 408167, 408168, 408169
 [DONE]    Edge listing text, single purpose, storage justification, privacy URL corrected and submitted 2026-09-12
           Evidence: Partner Center "UPDATE 0.0.7 In review" (screenshot in session; not readable through the API)
 [PENDING] Edge certification of that submission   waits on: Microsoft, 7 business days from 2026-09-12
 [PENDING] Manual check of the local downloader permission prompt in Edge and Firefox   waits on: the owner, checklist docs/manual-check-local-downloader.md
+[PENDING] Marquee promo tile 1400x560 for Chrome, no priority   waits on: nobody; a design in the style of the promo tile without repeating the arrow motif
 [PENDING] Store screenshots for 1.0.0   waits on: the version bump; `bun run --filter @savemedia/extension screenshots` renders them from the real popup (icon and version come from the build; regenerated 2026-09-12 at 0.0.7, commit 0666123)
 [PENDING] Upload of new screenshots to Chrome   waits on: the 0.0.7 review closing; goes into the 1.0.0 submission together with the package
 [PENDING] Release 1.0.0 with the local downloader   waits on: both listing reviews closed, manual check reported, then version bump and tag
@@ -115,7 +118,8 @@ force push, diff before apply, trash instead of rm.
 
 ```
 [DONE]    v1.3.0: lint covers dashes, emoji, manifest name/description, store images (presence, PNG size, duplicates)   Evidence: node --test 17 pass; save-media lint green with manifests and 6 images; yt-transcript manifests red as expected
-[PENDING] Both consumers lift their pin to v1.3.0   waits on: AgentA (save-media, same day), AgentB (yt-transcript)
+[DONE]    v1.4.0/v1.4.1: lint.brands (default Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla), `firefox icon [PATH] [--diff]`, `firefox previews list|set`, config stores.firefox.icon/previews, .playwright-mcp untracked   Evidence: node --test 20 pass; save-media lint green after moving an editorial note out of a public section; yt-transcript listing.md reports "Chrome" and "Firefox" (lines 46, 48) through a scratch config
+[PENDING] yt-transcript lifts its pin to v1.4.1   waits on: AgentB (announced)
 ```
 
 ## Store state (generated)
