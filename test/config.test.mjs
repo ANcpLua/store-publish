@@ -7,6 +7,7 @@ import { findConfig, loadConfig, validate, zipPath } from "../src/config.mjs";
 import { lintListing, sectionText } from "../src/listing.mjs";
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
+import { checkVersions } from "../src/version.mjs";
 
 const sample = {
   name: "demo",
@@ -117,4 +118,26 @@ test("daysUntil and parseArgs", () => {
     positional: ["edge", "release"],
     flags: { zip: "a.zip", source: true, notes: "hi" },
   });
+});
+
+test("checkVersions passes when every file agrees and fails naming the odd one out", () => {
+  const root = mkdtempSync(join(tmpdir(), "store-publish-v-"));
+  mkdirSync(join(root, "packages/extension"), { recursive: true });
+  const cfgRaw = { ...structuredClone(sample), versionFiles: ["packages/extension/manifest.json", "package.json", "package-lock.json"] };
+  writeFileSync(join(root, "store.config.json"), JSON.stringify(cfgRaw));
+  writeFileSync(join(root, "packages/extension/manifest.json"), JSON.stringify({ version: "2.0.0" }));
+  writeFileSync(join(root, "package.json"), JSON.stringify({ version: "2.0.0" }));
+  writeFileSync(join(root, "package-lock.json"), JSON.stringify({ version: "2.0.0", packages: { "": { version: "2.0.0" } } }));
+  const cfg = loadConfig(join(root, "store.config.json"));
+  assert.equal(checkVersions(cfg), "2.0.0");
+  assert.equal(checkVersions(cfg, "v2.0.0"), "2.0.0");
+  assert.throws(() => checkVersions(cfg, "v2.0.1"), /tag v2.0.1 does not match version 2.0.0/);
+  writeFileSync(join(root, "package-lock.json"), JSON.stringify({ version: "2.0.0", packages: { "": { version: "1.9.0" } } }));
+  assert.throws(() => checkVersions(cfg), /version fields disagree:[\s\S]*1.9.0\s+package-lock.json \(packages.""\)/);
+});
+
+test("versionFiles defaults to versionFrom and always includes it", () => {
+  assert.deepEqual(validate(structuredClone(sample)).versionFiles, ["packages/extension/manifest.json"]);
+  const cfg = validate({ ...structuredClone(sample), versionFiles: ["package.json"] });
+  assert.deepEqual(cfg.versionFiles, ["packages/extension/manifest.json", "package.json"]);
 });

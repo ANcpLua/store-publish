@@ -48,11 +48,19 @@ export function validate(raw, path = CONFIG_FILE) {
     zipPrefix: str(raw, "zipPrefix", "config"),
     zipDir: raw.zipDir === undefined ? "." : str(raw, "zipDir", "config"),
     versionFrom: str(raw, "versionFrom", "config"),
+    versionFiles: [],
     listing: str(raw, "listing", "config"),
     readme: raw.readme === undefined ? "README.md" : str(raw, "readme", "config"),
     lint: { forbidden: [] },
     stores: {},
   };
+  if (raw.versionFiles !== undefined) {
+    if (!Array.isArray(raw.versionFiles) || raw.versionFiles.length === 0 || !raw.versionFiles.every((f) => typeof f === "string" && f.length > 0)) {
+      throw bad("versionFiles must be a non-empty array of file paths");
+    }
+    cfg.versionFiles = [...raw.versionFiles];
+  }
+  if (!cfg.versionFiles.includes(cfg.versionFrom)) cfg.versionFiles.unshift(cfg.versionFrom);
   if (raw.lint !== undefined) {
     if (raw.lint === null || typeof raw.lint !== "object") throw bad("lint must be an object");
     if (raw.lint.forbidden !== undefined) {

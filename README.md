@@ -15,11 +15,11 @@ Add it as a git dependency and pin a tag:
 
 ```sh
 # bun
-bun add -d "github:ANcpLua/store-publish#v1.0.1"
+bun add -d "github:ANcpLua/store-publish#v1.1.0"
 # pnpm
-pnpm add -D "github:ANcpLua/store-publish#v1.0.1"
+pnpm add -D "github:ANcpLua/store-publish#v1.1.0"
 # npm
-npm install -D "github:ANcpLua/store-publish#v1.0.1"
+npm install -D "github:ANcpLua/store-publish#v1.1.0"
 ```
 
 The package has no dependencies and needs Node 22.11 or newer. The binary is
@@ -38,6 +38,7 @@ walking up from the working directory, or takes `--config PATH`.
 | `zipPrefix` | Store zips are `<zipPrefix>-<chrome\|edge\|firefox\|source>-<version>.zip` |
 | `zipDir` | Directory the zips are built into, relative to the config (default `.`) |
 | `versionFrom` | JSON file whose `version` field names the release (usually the manifest) |
+| `versionFiles` | Every JSON file that carries the version (manifests, package.json, package-lock.json). `version` fails when they disagree. `versionFrom` is always included |
 | `listing` | Markdown file with the store text, see below |
 | `readme` | File that carries the store table (default `README.md`) |
 | `lint.forbidden` | Extra words `lint` rejects, in addition to the built-in ones |
@@ -68,7 +69,17 @@ store-publish firefox upload|release|status           [--zip PATH] [--channel li
 store-publish amo-listing show|diff|apply
 store-publish lint
 store-publish readme [--write|--check]
+store-publish version [--tag TAG]
 store-publish config
+```
+
+`version` reads every file in `versionFiles`, fails when they do not carry
+the same version (or when `--tag vX.Y.Z` names a different one), and prints
+the version on stdout so a workflow can capture it:
+
+```yaml
+- id: v
+  run: echo "version=$(bunx store-publish version --tag "$GITHUB_REF_NAME")" >> "$GITHUB_OUTPUT"
 ```
 
 `release` is upload followed by publish. `status` is read-only everywhere:

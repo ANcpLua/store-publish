@@ -3,6 +3,7 @@
   "zipPrefix": "my-extension",
   "zipDir": ".",
   "versionFrom": "manifest.json",
+  "versionFiles": ["manifest.json", "package.json", "package-lock.json"],
   "listing": "store/listing.md",
   "readme": "README.md",
   "lint": { "forbidden": [] },
