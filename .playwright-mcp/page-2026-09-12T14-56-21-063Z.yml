@@ -1,0 +1,133 @@
+- generic [ref=f17e2]:
+  - banner [ref=f17e4]:
+    - generic [ref=f17e5]:
+      - generic [ref=f17e6]:
+        - button "Main menu" [expanded] [ref=f17e7] [cursor=pointer]
+        - link "Chrome Web Store Developer Dashboard" [ref=f17e12] [cursor=pointer]:
+          - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233
+      - generic [ref=f17e14]:
+        - generic:
+          - generic:
+            - generic:
+              - link "Skip to main content"
+        - generic [ref=f17e18]:
+          - generic [ref=f17e19]: "Publisher:"
+          - listbox "Switch Publisher Account Menu" [ref=f17e20] [cursor=pointer]:
+            - option "alexandernachtmann1@gmail.com" [selected] [ref=f17e21]
+      - generic [ref=f17e23]:
+        - button "Google apps" [ref=f17e27] [cursor=pointer]
+        - 'button "Google Account: alexander nachtmann (alexandernachtmann1@gmail.com), Google membership" [ref=f17e33] [cursor=pointer]'
+  - generic [ref=f17e38]:
+    - generic [ref=f17e39]:
+      - navigation "Primary menu" [ref=f17e40]:
+        - dialog "navigational drawer" [ref=f17e42]:
+          - menu [ref=f17e44]:
+            - generic [ref=f17e46]:
+              - generic [ref=f17e47]:
+                - generic [ref=f17e48]: Publisher
+                - menuitem "Items" [ref=f17e49] [cursor=pointer]
+                - menuitem "Settings" [ref=f17e54] [cursor=pointer]
+              - generic [ref=f17e59]:
+                - generic [ref=f17e60]: Account
+                - menuitem "Profile" [ref=f17e61] [cursor=pointer]
+                - menuitem "Notifications" [ref=f17e66] [cursor=pointer]
+      - main [ref=f17e71]:
+        - generic [ref=f17e73]:
+          - heading "Alerts" [level=1] [ref=f17e74]
+          - generic [ref=f17e76]:
+            - generic [ref=f17e77]:
+              - img "Info" [ref=f17e78]
+              - paragraph [ref=f17e84]:
+                - text: We’re updating publisher extension limits to help maintain a high-quality ecosystem.
+                - link "Learn more" [ref=f17e85] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/publish/#item_limits
+                - text: .
+            - button "Dismiss" [ref=f17e86] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f17e87]: clear
+        - generic [ref=f17e89]:
+          - heading "Items" [level=1] [ref=f17e90]
+          - generic [ref=f17e91]:
+            - button "2/5 extension limit" [ref=f17e94]:
+              - generic [aria-hidden] [ref=f17e97]: help_outline
+            - button "Add a new item" [ref=f17e101]:
+              - generic [aria-hidden] [ref=f17e104]: add
+              - generic [ref=f17e105]: New item
+        - generic [ref=f17e108]:
+          - grid [ref=f17e110]:
+            - row [ref=f17e112] [cursor=pointer]:
+              - gridcell [ref=f17e114]:
+                - checkbox "Archived" [ref=f17e115]
+          - table "Items" [ref=f17e118]:
+            - rowgroup [ref=f17e119]:
+              - row [ref=f17e120]:
+                - columnheader "Item" [ref=f17e121]
+                - columnheader "Type" [ref=f17e122]
+                - columnheader "Created" [ref=f17e123]
+                - columnheader "Last updated" [ref=f17e124]
+                - columnheader "Rating" [ref=f17e125]
+                - columnheader "Users" [ref=f17e126]
+                - columnheader "Status" [ref=f17e127]
+            - rowgroup [ref=f17e128]:
+              - row [ref=f17e129]:
+                - cell [ref=f17e130]:
+                  - link "Video Transcript Version 3.2.0" [ref=f17e131] [cursor=pointer]:
+                    - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit
+                    - generic [ref=f17e133]:
+                      - generic [ref=f17e134]: Video Transcript
+                      - generic [ref=f17e135]: Version 3.2.0
+                - cell "extension" [ref=f17e136]
+                - cell "Apr 29, 2026" [ref=f17e137]
+                - cell "Sep 12, 2026" [ref=f17e138]
+                - cell "★ 5" [ref=f17e139]
+                - cell "227" [ref=f17e140]
+                - cell "Published - public" [ref=f17e141]
+              - row [ref=f17e142]:
+                - cell [ref=f17e143]:
+                  - link "savemedia Version 0.0.7" [ref=f17e144] [cursor=pointer]:
+                    - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/negbodmpgjhkacmdkbfdpocjanaklifn/edit
+                    - generic [ref=f17e146]:
+                      - generic [ref=f17e147]: savemedia
+                      - generic [ref=f17e148]: Version 0.0.7
+                - cell "extension" [ref=f17e149]
+                - cell "Jun 1, 2026" [ref=f17e150]
+                - cell "Sep 12, 2026" [ref=f17e151]
+                - cell "—" [ref=f17e152]
+                - cell "9" [ref=f17e153]
+                - cell "Published - public" [ref=f17e154]
+          - navigation "navigation between pages of items" [ref=f17e155]:
+            - button "Previous Page" [disabled]:
+              - generic [aria-hidden]: navigate_before
+            - generic [ref=f17e156]:
+              - text: Items
+              - strong [ref=f17e157]: "1"
+              - text: "-"
+              - strong [ref=f17e158]: "2"
+              - text: of
+              - strong [ref=f17e159]: "2"
+            - button "Next Page" [disabled]:
+              - generic [aria-hidden]: navigate_next
+    - contentinfo [ref=f17e160]:
+      - generic [ref=f17e161]:
+        - generic [ref=f17e165]:
+          - heading "Useful Resources" [level=2] [ref=f17e166]
+          - list "Useful Resources" [ref=f17e167]:
+            - listitem [ref=f17e168]:
+              - link "Developer Guide" [ref=f17e169] [cursor=pointer]:
+                - /url: https://developer.chrome.com/webstore?hl=en
+        - generic [ref=f17e170]:
+          - heading "Need Help?" [level=2] [ref=f17e171]
+          - list "Need Help?" [ref=f17e172]:
+            - listitem [ref=f17e173]:
+              - link "Contact Us" [ref=f17e174] [cursor=pointer]:
+                - /url: https://support.google.com/chrome_webstore?p=contact&hl=en
+            - listitem [ref=f17e175]:
+              - link "Give Feedback" [ref=f17e176] [cursor=pointer]:
+                - /url: https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233
+      - generic [ref=f17e177]:
+        - generic [ref=f17e178]: © 2026 Google
+        - text: "-"
+        - link "Developer Agreement" [ref=f17e179] [cursor=pointer]:
+          - /url: https://developer.chrome.com/webstore/terms?hl=en
+        - text: "-"
+        - link "Google Privacy Policy" [ref=f17e180] [cursor=pointer]:
+          - /url: https://www.google.com/intl/en/privacy.html

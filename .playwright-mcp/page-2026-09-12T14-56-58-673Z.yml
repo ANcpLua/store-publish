@@ -1,0 +1,293 @@
+- generic [ref=e2]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button [ref=e403] [cursor=pointer]
+        - link [ref=e404] [cursor=pointer]:
+          - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233
+      - generic [ref=e18]:
+        - generic [ref=e19]: "Publisher:"
+        - listbox [ref=e405] [cursor=pointer]:
+          - option [selected] [ref=e406]: alexandernachtmann1@gmail.com
+      - generic [ref=e23]:
+        - button [ref=e407] [cursor=pointer]
+        - button [ref=e408] [cursor=pointer]
+  - generic [aria-hidden] [ref=e38]:
+    - main [ref=e40]:
+      - generic [ref=e409]:
+        - generic [ref=e44]:
+          - heading [level=1] [ref=e410]:
+            - link [ref=e411] [cursor=pointer]:
+              - /url: https://chromewebstore.google.com/detail/ahddbfbjafmbceehebpeanpnlbaimepk?authuser=0&hl=en
+              - text: Video Transcript
+          - generic [ref=e47]:
+            - generic [ref=e48]: "Status: Published - public"
+            - generic [ref=e49]: "ID: ahddbfbjafmbceehebpeanpnlbaimepk"
+        - generic [ref=e50]:
+          - button [ref=e412]:
+            - generic [ref=e56]: Save draft
+          - generic [ref=e57]:
+            - button [ref=e413]:
+              - generic [ref=e63]: Submit for review
+            - button [ref=e414] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e68]: more_vert
+      - generic [ref=e70]:
+        - navigation [ref=e415]:
+          - region [ref=e416]:
+            - heading [level=2] [ref=e417]: Build
+            - list [ref=e75]:
+              - listitem [ref=e76]:
+                - link [ref=e418] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/status
+                  - text: Status
+              - listitem [ref=e78]:
+                - link [ref=e419] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/package
+                  - text: Package
+              - listitem [ref=e80]:
+                - link [ref=e420] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/listing
+                  - text: Store listing
+              - listitem [ref=e82]:
+                - link [ref=e421] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/privacy
+                  - text: Privacy
+              - listitem [ref=e84]:
+                - link [ref=e422] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/distribution
+                  - text: Distribution
+          - region [ref=e423]:
+            - heading [level=2] [ref=e424]: Access
+            - list [ref=e88]:
+              - listitem [ref=e89]:
+                - link [ref=e425] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/testcredentials
+                  - text: Test instructions
+          - region [ref=e426]:
+            - heading [level=2] [ref=e427]: Analytics
+            - list [ref=e93]:
+              - listitem [ref=e94]:
+                - link [ref=e428] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/analytics/installs
+                  - text: Installs & uninstalls
+              - listitem [ref=e96]:
+                - link [ref=e429] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/analytics/impressions
+                  - text: Impressions
+              - listitem [ref=e98]:
+                - link [ref=e430] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/analytics/users
+                  - text: Users
+              - listitem [ref=e100]:
+                - link [ref=e431] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/ratings
+                  - text: Ratings
+        - article [ref=e432]:
+          - heading [level=2] [ref=e433]: Store listing
+          - region [ref=e434]:
+            - generic [ref=e106]:
+              - heading [level=3] [ref=e435]: Product details
+              - paragraph [ref=e108]: For all languages
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - paragraph [ref=e111]: Title from package
+                - paragraph [ref=e112]: Video Transcript
+              - generic [ref=e113]:
+                - paragraph [ref=e114]: Summary from package
+                - paragraph [ref=e115]: Turn any video into text — capture transcripts as you browse, or drop a video/audio file for on-device AI transcription. Free.
+              - generic [ref=e117]:
+                - generic [ref=e121]:
+                  - generic: Description*
+                  - generic [ref=e122]:
+                    - textbox [ref=e436]: Turn media into searchable text, privately and on your own machine. Open Video Transcript on a page with a video and it looks for captions the page already offers. It inspects the page only after you invoke it. When a page has none, you can transcribe the current tab or a local audio or video file using Chrome's built-in on-device AI. No account, no API key, no tracking, and no server behind it. • Finds captions a media page already provides, when you ask it to • Reads the subtitle formats browsers already understand • Transcribes the current tab, or a file you drop in, on your device • Summarizes, pulls out key points, and answers questions about what was said • Saves the result to a file • Search within the text, and keep highlights and notes • Works through a list of pages in one run • Keeps what you save on your machine and available offline Captions may be fetched from the page you selected or from the host that delivers them. Your text, notes, history, and AI processing stay in your browser and are never sent to the developer.
+                    - generic [ref=e124]:
+                      - text: 1,052/16,000
+                      - generic [ref=e125]: 1052 of 16000 characters entered
+                - generic [ref=e128]: Focus on explaining what the item does and why users should install it
+              - combobox [ref=e437] [cursor=pointer]:
+                - generic:
+                  - generic:
+                    - generic [aria-hidden]: Category*
+                - generic [aria-hidden]:
+                  - generic: Tools
+              - generic [ref=e139]:
+                - combobox [ref=e438] [cursor=pointer]:
+                  - generic:
+                    - generic:
+                      - generic [aria-hidden]: Language*
+                  - generic [aria-hidden]:
+                    - generic: English
+                - generic [ref=e146]:
+                  - text: Specifying your item’s language will help users find it. If you support multiple languages, then you should internationalize your item.
+                  - link [ref=e439] [cursor=pointer]:
+                    - /url: https://developer.chrome.com/webstore/i18n
+                    - text: Learn more
+          - region [ref=e440]:
+            - heading [level=3] [ref=e441]: Graphic assets
+            - generic [ref=e151]:
+              - generic [ref=e153]:
+                - generic [ref=e154]:
+                  - paragraph [ref=e155]: Store icon *
+                  - generic [ref=e156]:
+                    - paragraph [ref=e157]: 128x128 pixels
+                    - paragraph [ref=e158]:
+                      - text: Please ensure icon follows
+                      - link [ref=e442] [cursor=pointer]:
+                        - /url: https://developer.chrome.com/webstore/images#icons
+                        - text: image guidelines
+                - button [ref=e443] [cursor=pointer]
+              - generic [ref=e174]:
+                - heading [level=4] [ref=e445]: Global assets
+                - generic [ref=e180]:
+                  - generic [ref=e181]:
+                    - generic: Global promo video
+                    - textbox [ref=e446]:
+                      - /placeholder: Youtube URL
+                  - paragraph [ref=e184]: "Enter a YouTube video URL. Example: https://www.youtube.com/watch?v=1234567890A"
+                - generic [ref=e186]:
+                  - generic [ref=e187]:
+                    - paragraph [ref=e188]: Screenshots *
+                    - generic [ref=e189]:
+                      - paragraph [ref=e190]: Up to a maximum of 5
+                      - paragraph [ref=e191]: 1280x800 or 640x400
+                      - paragraph [ref=e192]: JPEG or 24-bit PNG (no alpha)
+                      - paragraph [ref=e193]: At least one is required
+                  - generic [ref=e197]:
+                    - generic [ref=e199]:
+                      - button [ref=e447] [cursor=pointer]
+                      - button [ref=e448] [cursor=pointer]
+                      - button [ref=e449] [cursor=pointer]
+                    - generic [ref=e222]:
+                      - button [ref=e451] [cursor=pointer]
+                      - button [ref=e452] [cursor=pointer]
+                      - button [ref=e453] [cursor=pointer]
+                    - button [ref=e455] [cursor=pointer]:
+                      - paragraph [ref=e249]: Drop image here
+              - generic [ref=e251]:
+                - generic [ref=e252]:
+                  - generic [ref=e253]:
+                    - paragraph [ref=e254]: Small promo tile
+                    - generic [ref=e255]:
+                      - paragraph [ref=e256]: 440x280 Canvas
+                      - paragraph [ref=e257]: JPEG or 24-bit PNG (no alpha)
+                  - button [ref=e456] [cursor=pointer]
+                - generic [ref=e272]:
+                  - generic [ref=e273]:
+                    - paragraph [ref=e274]: Marquee promo tile
+                    - generic [ref=e275]:
+                      - paragraph [ref=e276]: 1400x560 Canvas
+                      - paragraph [ref=e277]: JPEG or 24-bit PNG (no alpha)
+                  - button [ref=e458] [cursor=pointer]
+          - region [ref=e460]:
+            - heading [level=3] [ref=e461]: Additional fields
+            - generic [ref=e295]:
+              - generic [ref=e297]:
+                - generic [ref=e298]:
+                  - combobox [ref=e462] [cursor=pointer]:
+                    - generic:
+                      - generic:
+                        - generic [aria-hidden]: Official URL
+                    - generic [aria-hidden]:
+                      - generic: None
+                  - generic [ref=e303]:
+                    - text: Or
+                    - link [ref=e463] [cursor=pointer]:
+                      - /url: https://www.google.com/webmasters/tools
+                      - text: Add a new site
+                - generic [ref=e305]: If your item is associated with a website that you own, select that website from the list. You can register as the owner for a site using Google Search Console.
+              - generic [ref=e311]:
+                - generic [ref=e312]:
+                  - generic: Homepage URL
+                  - textbox [ref=e464]:
+                    - /placeholder: Homepage URL
+                    - text: https://github.com/ANcpLua/yt-transcript
+                - generic [ref=e314]:
+                  - paragraph [ref=e315]: Link to website for your item
+                  - generic [ref=e316]:
+                    - text: 40/2,048
+                    - generic [ref=e317]: 40 of 2048 characters entered
+              - generic [ref=e321]:
+                - generic [ref=e324]:
+                  - generic [ref=e325]:
+                    - generic: Support URL
+                    - textbox [ref=e465]:
+                      - /placeholder: Support URL
+                      - text: qyl.at
+                  - generic [ref=e328]:
+                    - text: 6/2,048
+                    - generic [ref=e329]: 6 of 2048 characters entered
+                - generic [ref=e332]:
+                  - text: Providing the URLs for description and support pages can improve your users’ experience and help make this item’s ratings and comments more meaningful.
+                  - link [ref=e466] [cursor=pointer]:
+                    - /url: https://developer.chrome.com/docs/webstore/cws-dashboard-listing#support-url
+                    - text: Learn more
+              - generic [ref=e335]:
+                - generic [ref=e337]:
+                  - generic [ref=e338]: Mature content
+                  - switch [ref=e467] [cursor=pointer]
+                - generic [ref=e351]:
+                  - text: Examples of mature content include sexual and suggestive content, strong language, violence, or a focus on the consumption or sale of alcohol, tobacco, or drugs.
+                  - link [ref=e468] [cursor=pointer]:
+                    - /url: https://developer.chrome.com/webstore/rating
+                    - text: Learn more
+          - region [ref=e469]:
+            - heading [level=3] [ref=e470]: Additional metrics
+            - generic [ref=e359]:
+              - generic [ref=e360]:
+                - heading [level=4] [ref=e471]: Google Analytics 4 (GA4)
+                - button [ref=e472]:
+                  - generic [ref=e367]: Opt in to Google Analytics
+              - generic [ref=e369]:
+                - text: Once opted in, all developers who have access to this item will be able to view additional metrics in Google Analytics.
+                - link [ref=e473] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/google-analytics/
+                  - text: Learn more
+          - region [ref=e474]:
+            - heading [level=3] [ref=e475]: Item support
+            - generic [ref=e376]:
+              - generic [ref=e377]:
+                - text: Visibility.
+                - link [ref=e476] [cursor=pointer]:
+                  - /url: ./webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/settings#item-support
+                  - text: Change visibility here
+              - generic [ref=e380]:
+                - text: Turn your item support on or off on your store listing.
+                - link [ref=e477] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/support-users
+                  - text: Learn more
+    - contentinfo [ref=e382]:
+      - generic [ref=e383]:
+        - generic [ref=e387]:
+          - heading [level=2] [ref=e478]: Useful Resources
+          - list [ref=e479]:
+            - listitem [ref=e390]:
+              - link [ref=e480] [cursor=pointer]:
+                - /url: https://developer.chrome.com/webstore?hl=en
+                - text: Developer Guide
+        - generic [ref=e392]:
+          - heading [level=2] [ref=e481]: Need Help?
+          - list [ref=e482]:
+            - listitem [ref=e395]:
+              - link [ref=e483] [cursor=pointer]:
+                - /url: https://support.google.com/chrome_webstore?p=contact&hl=en
+                - text: Contact Us
+            - listitem [ref=e397]:
+              - link [ref=e484] [cursor=pointer]:
+                - /url: https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/listing
+                - text: Give Feedback
+      - generic [ref=e399]:
+        - generic [ref=e400]: © 2026 Google
+        - text: "-"
+        - link [ref=e485] [cursor=pointer]:
+          - /url: https://developer.chrome.com/webstore/terms?hl=en
+          - text: Developer Agreement
+        - text: "-"
+        - link [ref=e486] [cursor=pointer]:
+          - /url: https://www.google.com/intl/en/privacy.html
+          - text: Google Privacy Policy
+  - dialog [ref=e488]:
+    - heading "Remove Image" [level=2] [ref=e489]
+    - generic [ref=e490]: Are you sure you want to remove this image? This cannot be undone.
+    - generic [ref=e491]:
+      - button "Cancel" [ref=e492]
+      - button "Remove" [active] [ref=e496] [cursor=pointer]

@@ -45,6 +45,21 @@ force push, diff before apply, trash instead of rm.
 - AMO listing text is written by `store-publish amo-listing apply` under the
   add-on's own default locale (`de` for both extensions although the text is
   English; never hardcode a locale).
+- Store icons are listing fields, not package contents, on every store.
+  Chrome: "Store icon" under Store listing, Graphic assets; the package must
+  also carry a 128x128 icon ("You must provide a 128x128-pixel extension icon
+  image in the ZIP file", https://developer.chrome.com/docs/webstore/images),
+  but a new package does not replace the dashboard field (Video Transcript
+  3.2.0 shipped the new icon and the store kept the old one). Edge: "Extension
+  logo" on the Details for <language> page, 300x300, "All the other items
+  (such as logo or tiles) are uploaded separately"
+  (https://learn.microsoft.com/en-us/microsoft-edge/extensions/publish/publish-extension).
+  AMO: the `icon` field of the add-on, set through the developer hub or
+  `PATCH /api/v5/addons/addon/<slug>/` with form field `icon`; "revert to the
+  default add-on icon, send null"
+  (https://mozilla.github.io/addons-server/topics/api/addons.html). savemedia
+  on AMO serves the default icon today (icon_url ends in
+  addon-icons/default-64.png), so the icon was never uploaded there.
 - Credentials: never regenerate a key to fix a 401. AMO has one key pair per
   account shared by both repositories; a new one invalidates the old one
   everywhere. Store secrets can only be exercised in a workflow run.
@@ -56,8 +71,10 @@ force push, diff before apply, trash instead of rm.
 ```
 [DONE]    Chrome listing text, single purpose, privacy/homepage/support URLs corrected and submitted 2026-09-12
           Evidence: store-status run 34699295187 (14:26 UTC) and run 34700110756: submittedItemRevisionStatus PENDING_REVIEW crxVersion 0.0.7, published 0.0.7 unchanged (metadata-only submission)
-[PENDING] Chrome review of that submission   waits on: Google
-[PENDING] Read the Chrome dashboard wording back against listing.md   waits on: the owner signing in to the Playwright browser once; not a blocker
+[DONE]    Chrome dashboard wording read back: description, homepage and support URL in the draft equal listing.md   Evidence: Playwright snapshot 2026-09-12 14:54 UTC, normalised text comparison true
+[DONE]    That metadata submission was cancelled (by the owner, dashboard menu)   Evidence: store-status run 34700662694: submittedItemRevisionStatus CANCELLED crxVersion 0.0.7; public listing still carries the old text ("bypass", DRM brand names) as of 14:55 UTC
+[PENDING] Resubmit Chrome with corrected text plus new screenshots and store icon in one submission   waits on: the owner's go (draft being prepared 2026-09-12)
+[PENDING] AMO icon upload (listing shows the default icon)   waits on: a `store-publish firefox icon` subcommand or a PATCH with the AMO key; then run through store-status.yml
 [DONE]    Edge listing text, single purpose, storage justification, privacy URL corrected and submitted 2026-09-12
           Evidence: Partner Center "UPDATE 0.0.7 In review" (screenshot in session; not readable through the API)
 [PENDING] Edge certification of that submission   waits on: Microsoft, 7 business days from 2026-09-12
