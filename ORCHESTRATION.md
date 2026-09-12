@@ -72,7 +72,9 @@ force push, diff before apply, trash instead of rm.
 [DONE]    v3.2.0 released to all three stores   Evidence: release run 34699894419 green (tag pushed 14:38:46 UTC after coordinator go-ahead; later confirmed "Tag jetzt")
 [PENDING] 3.2.0 reviews (Chrome PENDING_REVIEW, Edge in certification, Firefox unreviewed)   waits on: the stores; store-status chrome/firefox
 [PENDING] Edge listing text is still the 1.x copy ("captured automatically"); repo text in store/listing.md   waits on: Edge certification of 3.2.0 and a session with a Microsoft login
-[PENDING] Vitest port of the 14 node:test tests   waits on: AgentB (branch, PR, green CI, no tag)
+[DONE]    Vitest port of the node:test suite   Evidence: PR #62 merged, ci run 34700226558 green on main (reported by AgentB)
+[PENDING] 3.2.1 public text cleanup (em dashes, "Free.", browser names out of manifest descriptions and UI strings; on main)   waits on: Chrome, Edge and Firefox 3.2.0 reviews before it is released
+[PENDING] Store images redo (five real 1280x800 panel screenshots, 440x280 tile, 1400x560 marquee, no arrow, no browser name)   waits on: branch and PR by AgentB; upload after the 3.2.0 reviews
 [PENDING] manifest.json and manifest.firefox.json description carry an em dash   waits on: AgentB; `store-publish lint` v1.3.0 with "manifests" in store.config.json reports both (verified 2026-09-12 against main through a scratch config)
 [DONE]    store-publish v1.1.0 adopted, versionFiles check   Evidence: AgentB commit 18ad3bc, edge status dispatch green (reported by AgentB)
 ```
