@@ -7,7 +7,7 @@
  * Docs: https://mozilla.github.io/addons-server/topics/api/addons.html
  */
 import { existsSync, readFileSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, resolve } from "node:path";
 import { amoJwt, required, sleep } from "./common.mjs";
 import { zipPath } from "./config.mjs";
 

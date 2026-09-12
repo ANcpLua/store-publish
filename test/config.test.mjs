@@ -230,3 +230,22 @@ test("firefox icon and previews config fields", () => {
   assert.equal(isDefaultIcon("https://addons.mozilla.org/user-media/addon_icons/1/123-64.png?modified=1"), false);
   assert.equal(isDefaultIcon(null), true);
 });
+
+test("firefox module resolves asset paths against the config root (regression: resolve was not imported)", async () => {
+  const mod = await import("../src/firefox.mjs");
+  assert.equal(typeof mod.run, "function");
+  const root = mkdtempSync(join(tmpdir(), "store-publish-ff-"));
+  writeFileSync(join(root, "store.config.json"), JSON.stringify({ ...sample, stores: { ...sample.stores, firefox: { ...sample.stores.firefox, icon: "missing.png" } } }));
+  mkdirSync(join(root, "packages/extension"), { recursive: true });
+  writeFileSync(join(root, "packages/extension/manifest.json"), JSON.stringify({ version: "1.0.0" }));
+  const cfg = loadConfig(join(root, "store.config.json"));
+  process.env.AMO_JWT_ISSUER = "user:1:1"; process.env.AMO_JWT_SECRET = "s";
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ icon_url: "https://addons.mozilla.org/static-server/img/addon-icons/default-64.png" }), { status: 200 });
+  try {
+    await assert.rejects(mod.run(cfg, "icon", { _positional: [] }), /icon not found: .*missing\.png/);
+  } finally {
+    globalThis.fetch = realFetch;
+    delete process.env.AMO_JWT_ISSUER; delete process.env.AMO_JWT_SECRET;
+  }
+});

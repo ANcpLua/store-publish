@@ -15,11 +15,11 @@ Add it as a git dependency and pin a tag:
 
 ```sh
 # bun
-bun add -d "github:ANcpLua/store-publish#v1.4.0"
+bun add -d "github:ANcpLua/store-publish#v1.4.1"
 # pnpm
-pnpm add -D "github:ANcpLua/store-publish#v1.4.0"
+pnpm add -D "github:ANcpLua/store-publish#v1.4.1"
 # npm
-npm install -D "github:ANcpLua/store-publish#v1.4.0"
+npm install -D "github:ANcpLua/store-publish#v1.4.1"
 ```
 
 The package has no dependencies and needs Node 22.11 or newer. The binary is
