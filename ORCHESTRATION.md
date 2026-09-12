@@ -9,7 +9,7 @@ comment line.
 
 | Repository | Writes | Everyone else |
 | --- | --- | --- |
-| ANcpLua/store-publish (this CLI) | AgentA only | Opens issues here; consumers pin a tag and lift the pin after a bump is announced |
+| ANcpLua/store-publish (this CLI) | AgentB since v1.6.0 (owner's decision, 2026-09-12); AgentA keeps ORCHESTRATION.md and docs/PUBLISHING.md current | Consumers pin a tag and lift the pin after a bump is announced |
 | ANcpLua/save-media | AgentA | Issues |
 | ANcpLua/yt-transcript | AgentB | Issues |
 | Coordinator session | writes nowhere | Decides irreversible steps: store submissions, deletions, key rotations, breaking changes |
@@ -161,6 +161,7 @@ force push, diff before apply, trash instead of rm.
 ```
 [DONE]    docs/PUBLISHING.md: six targets, API access per store, 22 verified links   Evidence: commit 8894731
 [DONE]    v1.3.0: lint covers dashes, emoji, manifest name/description, store images (presence, PNG size, duplicates)   Evidence: node --test 17 pass; save-media lint green with manifests and 6 images; yt-transcript manifests red as expected
+[DONE]    v1.6.0 (AgentB): status rows carry the dashboard item URL and the AMO preview ids; lint checks browser_specific_settings.gecko.id against stores.firefox.id and, with lint.packageScript, that the package script produces <zipPrefix>-<kind>-<version>.zip names   Evidence: commit 1982751, tag v1.6.0, ci run 34713192052 27/27; save-media pinned with packageScript, yt-transcript pinned (5e73fd5)
 [DONE]    v1.5.0: lint.textFiles (prose literals of source files, e.g. screenshot harness captions), `firefox previews delete <position|#id>`   Evidence: commit 5f84140, node --test 24 pass; save-media pinned (23ea54b), yt-transcript's screenshot sources green through a scratch config
 [DONE]    v1.4.3: every AMO call retries on 429 after the wait AMO names (Retry-After fallback, N+2 s, 30 min ceiling, 6 retries); `firefox previews set` idempotent by position and pixel size, upload before delete, `--replace`   Evidence: node --test 23 pass; yt-transcript run 34704549670 (issue #2 closed)
 [DONE]    v1.4.0/v1.4.1: lint.brands (default Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla), `firefox icon [PATH] [--diff]`, `firefox previews list|set`, config stores.firefox.icon/previews, .playwright-mcp untracked   Evidence: node --test 20 pass; save-media lint green after moving an editorial note out of a public section; yt-transcript listing.md reports "Chrome" and "Firefox" (lines 46, 48) through a scratch config
