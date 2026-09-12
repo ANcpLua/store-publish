@@ -59,8 +59,9 @@ export function runLint(cfg) {
   const problems = [];
   for (const p of lintListing(readListing(cfg), cfg.lint.forbidden, cfg.lint.brands)) problems.push(`${cfg.listing}:${p.line}: ${p.message}`);
   for (const p of lintManifests(cfg)) problems.push(p);
+  for (const p of lintTextFiles(cfg)) problems.push(p);
   for (const p of lintImages(cfg)) problems.push(p);
-  const scope = [cfg.listing, ...cfg.manifests, cfg.images.length ? `${cfg.images.length} image(s)` : null].filter(Boolean).join(", ");
+  const scope = [cfg.listing, ...cfg.manifests, ...cfg.lint.textFiles, cfg.images.length ? `${cfg.images.length} image(s)` : null].filter(Boolean).join(", ");
   if (problems.length === 0) {
     console.log(`✓ ${scope}: no forbidden words, brand names, dashes, emoji or comma chains; images present and distinct`);
     return;
@@ -112,6 +113,42 @@ export function lintManifests(cfg) {
     }
   }
   return problems;
+}
+
+/**
+ * `lint.textFiles`: source files whose string literals are public text, for
+ * example the caption strings of a screenshot harness. Every quoted literal
+ * that looks like prose (a space inside, at least twelve characters) gets the
+ * text rules; identifiers, paths and URLs are skipped.
+ */
+export function lintTextFiles(cfg) {
+  const problems = [];
+  for (const file of cfg.lint.textFiles) {
+    const path = resolve(cfg.root, file);
+    if (!existsSync(path)) {
+      problems.push(`${file}: text file not found`);
+      continue;
+    }
+    const lines = readFileSync(path, "utf8").split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      for (const literal of stringLiterals(lines[i])) {
+        for (const p of textProblems(literal, cfg.lint.forbidden, cfg.lint.brands)) problems.push(`${file}:${i + 1}: ${p}`);
+      }
+    }
+  }
+  return problems;
+}
+
+/** Double-, single- and backtick-quoted literals on one line that read as prose. */
+export function stringLiterals(line) {
+  const out = [];
+  const re = /"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'|`((?:[^`\\]|\\.)*)`/g;
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    const text = m[1] ?? m[2] ?? m[3] ?? "";
+    if (text.length >= 12 && /\s/.test(text.trim()) && !/^https?:\/\//.test(text)) out.push(text);
+  }
+  return out;
 }
 
 /** `images` in the config: every file present, the declared size honoured, no two files byte-identical. */

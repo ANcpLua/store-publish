@@ -54,7 +54,7 @@ export function validate(raw, path = CONFIG_FILE) {
     versionFiles: [],
     listing: str(raw, "listing", "config"),
     readme: raw.readme === undefined ? "README.md" : str(raw, "readme", "config"),
-    lint: { forbidden: [], brands: [...DEFAULT_BRANDS] },
+    lint: { forbidden: [], brands: [...DEFAULT_BRANDS], textFiles: [] },
     manifests: [],
     images: [],
     stores: {},
@@ -88,6 +88,12 @@ export function validate(raw, path = CONFIG_FILE) {
         throw bad("lint.forbidden must be an array of strings");
       }
       cfg.lint.forbidden = raw.lint.forbidden;
+    }
+    if (raw.lint.textFiles !== undefined) {
+      if (!Array.isArray(raw.lint.textFiles) || !raw.lint.textFiles.every((f) => typeof f === "string" && f.length > 0)) {
+        throw bad("lint.textFiles must be an array of file paths");
+      }
+      cfg.lint.textFiles = [...raw.lint.textFiles];
     }
     if (raw.lint.brands !== undefined) {
       if (!Array.isArray(raw.lint.brands) || !raw.lint.brands.every((w) => typeof w === "string")) {

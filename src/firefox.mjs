@@ -20,7 +20,7 @@ export const COMMANDS = {
   release: "upload, validate, create the version (--zip PATH, --notes \"text\", --source PATH)",
   status: "list the add-on's versions and their review status (read-only)",
   icon: "set the listing icon from stores.firefox.icon or PATH (AMO resizes to 32/64/128); --diff only reports",
-  previews: "list | set: bring the listing screenshots to stores.firefox.previews (or PATHs), uploading only missing positions; --replace deletes and re-uploads everything",
+  previews: "list | set | delete N: bring the listing screenshots to stores.firefox.previews (or PATHs), uploading only missing positions; --replace re-uploads everything; delete removes one position or #id",
 };
 
 export async function run(cfg, command, flags) {
@@ -153,7 +153,20 @@ async function previews(cfg, flags) {
     for (const p of current) console.log(`  #${p.id} position=${p.position} ${p.image_size?.join("x") ?? "?"} ${p.image_url}`);
     return;
   }
-  if (sub !== "set") throw new Error(`firefox previews: unknown subcommand ${sub} (list | set)`);
+  if (sub === "delete") {
+    const target = paths[0];
+    if (target === undefined) throw new Error("firefox previews delete needs a position (0-based) or #id");
+    const victim = target.startsWith("#")
+      ? current.find((p) => String(p.id) === target.slice(1))
+      : current[Number(target)];
+    if (!victim) throw new Error(`no preview at ${target}; current: ${current.map((p) => `#${p.id}@${p.position}`).join(", ") || "none"}`);
+    await api(`/addons/addon/${slug}/previews/${victim.id}/`, { method: "DELETE" });
+    const left = (await api(`/addons/addon/${slug}/${bust()}`)).previews ?? [];
+    if (left.some((p) => p.id === victim.id)) throw new Error(`DELETE returned OK but #${victim.id} is still listed`);
+    console.log(`✓ removed #${victim.id} (position ${victim.position}); ${left.length} preview(s) left`);
+    return;
+  }
+  if (sub !== "set") throw new Error(`firefox previews: unknown subcommand ${sub} (list | set | delete)`);
   const files = paths.length ? paths : (cfg.stores.firefox.previews ?? []);
   if (files.length === 0) throw new Error("no previews given: set stores.firefox.previews in store.config.json or pass PATHs");
   const wanted = files.map((file) => {

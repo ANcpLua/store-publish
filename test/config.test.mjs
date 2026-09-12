@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { findConfig, loadConfig, validate, zipPath } from "../src/config.mjs";
-import { lintImages, lintListing, lintManifests, pngSize, sectionText, textProblems } from "../src/listing.mjs";
+import { lintImages, lintListing, lintManifests, lintTextFiles, pngSize, sectionText, stringLiterals, textProblems } from "../src/listing.mjs";
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
 import { checkVersions } from "../src/version.mjs";
@@ -293,4 +293,18 @@ test("throttleSeconds parses AMO's 429 detail or Retry-After, and api waits then
     globalThis.fetch = realFetch;
     delete process.env.AMO_JWT_ISSUER; delete process.env.AMO_JWT_SECRET;
   }
+});
+
+test("lint.textFiles checks prose string literals in source files", () => {
+  assert.deepEqual(stringLiterals('  sub: "DRM, DASH, encrypted, and live streams are detected and never bypassed.",'), ["DRM, DASH, encrypted, and live streams are detected and never bypassed."]);
+  assert.deepEqual(stringLiterals('import x from "../../util/filename"; const u = "https://example.com/a b"; const id = "media-source";'), []);
+  assert.deepEqual(stringLiterals("const t = `Save a verified direct video`;"), ["Save a verified direct video"]);
+  const root = mkdtempSync(join(tmpdir(), "store-publish-t-"));
+  writeFileSync(join(root, "harness.tsx"), 'export const SCENES = [\n  { title: "Protected media is refused", sub: "DRM, DASH, encrypted, and live streams are detected and never bypassed." },\n  { title: "Save a verified direct video", sub: "Only complete, browser-visible media is offered for download." },\n];\n');
+  const cfg = { ...validate({ ...structuredClone(sample), lint: { textFiles: ["harness.tsx", "missing.tsx"] } }), root };
+  assert.deepEqual(lintTextFiles(cfg), [
+    'harness.tsx:2: forbidden word "bypassed"',
+    "missing.tsx: text file not found",
+  ]);
+  assert.throws(() => validate({ ...structuredClone(sample), lint: { textFiles: "harness.tsx" } }), /lint\.textFiles/);
 });
