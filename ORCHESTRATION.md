@@ -109,6 +109,11 @@ force push, diff before apply, trash instead of rm.
 ### yt-transcript
 
 ```
+[DONE]    Chrome 3.2.1 submitted: description without browser names, store icon, 5 UI screenshots, 440x280 tile, 1400x560 marquee, auto-publish   Evidence: status run 34701679765 (15:15 UTC) published 3.1.0, submitted 3.2.1 PENDING_REVIEW; release run 34701390181 (chrome update)
+[DONE]    Firefox 3.2.1 submitted   Evidence: release run 34701391394
+[PENDING] Edge 3.2.1   waits on: certification of 3.2.0, then release.yml stores=edge; afterwards the Edge listing (text, logo, images) through the coordinator's Playwright
+[PENDING] AMO previews (429 throttle, retry after 12 min) and AMO icon for Video Transcript   waits on: AgentB with v1.4.2
+[PENDING] Playwright flake: rankTrack tie-break   waits on: AgentB, commit on main
 [DONE]    v3.2.0 released to all three stores   Evidence: release run 34699894419 green (tag pushed 14:38:46 UTC after coordinator go-ahead; later confirmed "Tag jetzt")
 [AMBIG]   3.2.0 Chrome review vs 3.2.1 with new images   Options: wait for 3.2.0 | cancel the review and submit 3.2.1   Decision (coordinator, 2026-09-12): cancel the Chrome review of 3.2.0; 3.2.1 goes to Chrome and Firefox today with the new images in one submission, Edge after its 3.2.0 certification
 [PENDING] 3.2.0 Edge certification and Firefox review   waits on: the stores; store-status firefox, Partner Center for Edge
