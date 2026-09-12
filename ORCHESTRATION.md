@@ -79,8 +79,10 @@ force push, diff before apply, trash instead of rm.
   again about 2026-09-13 08:39 UTC). store-publish v1.4.3 waits for the
   burst limit and stops cleanly at the daily cap (30 min ceiling per wait);
   `firefox previews set` is idempotent, so the next day's run continues at
-  the first missing position. Plan icon plus screenshots for one extension
-  per day.
+  the first missing position. The cap is per account, and both extensions
+  share one AMO account, so their uploads count together (about nine image
+  writes across both hit it on 2026-09-12). Rule: bundle image uploads, at
+  most one apply run per extension per day, and count the writes in the log.
 - Credentials: never regenerate a key to fix a 401. AMO has one key pair per
   account shared by both repositories; a new one invalidates the old one
   everywhere. Store secrets can only be exercised in a workflow run.
@@ -118,7 +120,7 @@ force push, diff before apply, trash instead of rm.
 [DONE]    Firefox 3.2.1 submitted   Evidence: release run 34701391394
 [PENDING] Edge 3.2.1   waits on: certification of 3.2.0, then release.yml stores=edge; afterwards the Edge listing (text, logo, images) through the coordinator's Playwright
 [DONE]    AMO previews positions 0-2 for Video Transcript with v1.4.3   Evidence: run 34704549670 kept #408195 (pos 0), uploaded #408196 (pos 1), #408197 (pos 2), all 1280x800; stopped cleanly at the daily cap ("Expected available in 59126 seconds")
-[PENDING] AMO previews positions 3 and 4 for Video Transcript   waits on: the daily cap, one more amo-previews-apply run on 2026-09-13 after 08:39 UTC (AgentB)
+[PENDING] AMO previews positions 3 and 4 for Video Transcript   waits on: 2026-09-13 09:00 UTC, one dispatch by AgentB
 [PENDING] Playwright flake: rankTrack tie-break   waits on: AgentB, commit on main
 [DONE]    v3.2.0 released to all three stores   Evidence: release run 34699894419 green (tag pushed 14:38:46 UTC after coordinator go-ahead; later confirmed "Tag jetzt")
 [AMBIG]   3.2.0 Chrome review vs 3.2.1 with new images   Options: wait for 3.2.0 | cancel the review and submit 3.2.1   Decision (coordinator, 2026-09-12): cancel the Chrome review of 3.2.0; 3.2.1 goes to Chrome and Firefox today with the new images in one submission, Edge after its 3.2.0 certification
