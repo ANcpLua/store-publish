@@ -1,2 +1,5 @@
 node_modules/
 *.zip
+# The global gitignore on the author machine hides bin/ (a .NET habit); the CLI entry point lives there.
+!bin/
+!bin/**
