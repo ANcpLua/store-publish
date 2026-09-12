@@ -31,7 +31,11 @@ force push, diff before apply, trash instead of rm.
 
 ## Tool limits
 
-- Chrome Web Store dashboard: only through the Playwright MCP browser, and
+- Chrome Web Store: a running review can be cancelled in the dashboard
+  (item menu: Preview, Cancel review, Defer publish, Unpublish, Transfer,
+  Roll back version; owner screenshot, item ahddbfbjafmbceehebpeanpnlbaimepk,
+  2026-09-12). Only a package upload during a review is refused by the API.
+  The dashboard is reachable only through the Playwright MCP browser, and
   only while the owner is signed in there. The session expires after hours
   and needs the owner to sign in again. The Chrome extension automation
   cannot read chrome.google.com/webstore at all ("The extensions gallery
@@ -70,7 +74,8 @@ force push, diff before apply, trash instead of rm.
 
 ```
 [DONE]    v3.2.0 released to all three stores   Evidence: release run 34699894419 green (tag pushed 14:38:46 UTC after coordinator go-ahead; later confirmed "Tag jetzt")
-[PENDING] 3.2.0 reviews (Chrome PENDING_REVIEW, Edge in certification, Firefox unreviewed)   waits on: the stores; store-status chrome/firefox
+[AMBIG]   3.2.0 Chrome review vs 3.2.1 with new images   Options: wait for 3.2.0 | cancel the review and submit 3.2.1   Decision (coordinator, 2026-09-12): cancel the Chrome review of 3.2.0; 3.2.1 goes to Chrome and Firefox today with the new images in one submission, Edge after its 3.2.0 certification
+[PENDING] 3.2.0 Edge certification and Firefox review   waits on: the stores; store-status firefox, Partner Center for Edge
 [PENDING] Edge listing text is still the 1.x copy ("captured automatically"); repo text in store/listing.md   waits on: Edge certification of 3.2.0 and a session with a Microsoft login
 [DONE]    Vitest port of the node:test suite   Evidence: PR #62 merged, ci run 34700226558 green on main (reported by AgentB)
 [PENDING] 3.2.1 public text cleanup (em dashes, "Free.", browser names out of manifest descriptions and UI strings; on main)   waits on: Chrome, Edge and Firefox 3.2.0 reviews before it is released
