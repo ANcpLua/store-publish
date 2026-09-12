@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { findConfig, loadConfig, validate, zipPath } from "../src/config.mjs";
-import { lintListing, sectionText } from "../src/listing.mjs";
+import { lintImages, lintListing, lintManifests, pngSize, sectionText, textProblems } from "../src/listing.mjs";
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
 import { checkVersions } from "../src/version.mjs";
@@ -159,4 +159,50 @@ test("renderStatus stamps the table with time, command and config", () => {
   const md = renderStatus(cfg, rows, { now: new Date("2026-09-12T15:00:00Z") });
   assert.match(md, /^<!-- generated 2026-09-12T15:00:00.000Z by `store-publish status --markdown` from .*store\.config\.json \(demo\); regenerate, do not edit -->/);
   assert.match(md, /\| \[Chrome Web Store\]\(https:\/\/c\) \| 1\.0\.0 \| 2026-09-01 \| published 1\.0\.0 \(PUBLISHED\) \| accepted \|/);
+});
+
+test("textProblems rejects dashes and emoji but not ordinary punctuation", () => {
+  assert.deepEqual(textProblems("Saves video; refuses DRM: nothing else. (c) 2026 \u00a9"), []);
+  assert.deepEqual(textProblems("Fast \u2014 local"), ["em dash (U+2014); use a comma, a colon or a new sentence"]);
+  assert.deepEqual(textProblems("2024\u20132026"), ['en dash (U+2013); use a hyphen or the word "to"']);
+  assert.deepEqual(textProblems("Save video \u{1F3AC} fast"), ['emoji "\u{1F3AC}"']);
+  assert.equal(textProblems("Save it \u2705").length, 1);
+});
+
+test("lintManifests checks name and description of every listed manifest", () => {
+  const root = mkdtempSync(join(tmpdir(), "store-publish-m-"));
+  writeFileSync(join(root, "manifest.json"), JSON.stringify({ name: "Demo", description: "Transcripts \u2014 free. Exports TXT, SRT, VTT, JSON, CSV, and Markdown." }));
+  writeFileSync(join(root, "clean.json"), JSON.stringify({ name: "Demo", description: "Saves verified video." }));
+  const cfg = { ...validate({ ...structuredClone(sample), manifests: ["manifest.json", "clean.json", "missing.json"] }), root };
+  const problems = lintManifests(cfg);
+  assert.deepEqual(problems, [
+    "manifest.json: description: em dash (U+2014); use a comma, a colon or a new sentence",
+    'manifest.json: description: comma chain of 6 short items reads as keyword spam: "Exports TXT, SRT, VTT, JSON, CSV, Markdown"',
+    "missing.json: manifest not found",
+  ]);
+});
+
+test("lintImages finds missing files, wrong sizes and byte-identical pairs", () => {
+  const root = mkdtempSync(join(tmpdir(), "store-publish-i-"));
+  const png = (w, h) => {
+    const b = Buffer.alloc(33);
+    Buffer.from("\x89PNG\r\n\x1a\n", "latin1").copy(b, 0);
+    b.writeUInt32BE(13, 8); b.write("IHDR", 12); b.writeUInt32BE(w, 16); b.writeUInt32BE(h, 20);
+    return b;
+  };
+  writeFileSync(join(root, "a.png"), png(1280, 800));
+  writeFileSync(join(root, "b.png"), png(1280, 800));
+  writeFileSync(join(root, "c.png"), png(640, 400));
+  writeFileSync(join(root, "d.txt"), "not a png");
+  assert.equal(pngSize(png(1280, 800)), "1280x800");
+  assert.equal(pngSize(Buffer.from("nope")), null);
+  const cfg = { ...validate({ ...structuredClone(sample), images: [{ path: "a.png", size: "1280x800" }, { path: "b.png", size: "1280x800" }, { path: "c.png", size: "1280x800" }, "d.txt", "e.png", { path: "d.txt", size: "1x1" }] }), root };
+  assert.deepEqual(lintImages(cfg), [
+    "b.png: byte-identical to a.png",
+    "c.png: is 640x400, expected 1280x800",
+    "e.png: image not found",
+    "d.txt: byte-identical to d.txt",
+    "d.txt: not a PNG, cannot check the size",
+  ]);
+  assert.throws(() => validate({ ...structuredClone(sample), images: [{ path: "x", size: "big" }] }), /images\[0\]\.size/);
 });

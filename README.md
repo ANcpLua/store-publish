@@ -15,11 +15,11 @@ Add it as a git dependency and pin a tag:
 
 ```sh
 # bun
-bun add -d "github:ANcpLua/store-publish#v1.2.0"
+bun add -d "github:ANcpLua/store-publish#v1.3.0"
 # pnpm
-pnpm add -D "github:ANcpLua/store-publish#v1.2.0"
+pnpm add -D "github:ANcpLua/store-publish#v1.3.0"
 # npm
-npm install -D "github:ANcpLua/store-publish#v1.2.0"
+npm install -D "github:ANcpLua/store-publish#v1.3.0"
 ```
 
 The package has no dependencies and needs Node 22.11 or newer. The binary is
@@ -42,6 +42,8 @@ walking up from the working directory, or takes `--config PATH`.
 | `listing` | Markdown file with the store text, see below |
 | `readme` | File that carries the store table (default `README.md`) |
 | `lint.forbidden` | Extra words `lint` rejects, in addition to the built-in ones |
+| `manifests` | Extension manifests whose `name` and `description` (the store summary line) `lint` checks with the text rules |
+| `images` | Store images `lint` requires: `"path"` or `{ "path", "size": "1280x800" }`; missing files, wrong PNG sizes and byte-identical pairs fail |
 | `stores.<store>.id` | Chrome item id, Edge product GUID, Firefox add-on id |
 | `stores.<store>.url` | Public listing |
 | `stores.<store>.dashboard` | Where a human edits the listing |
@@ -111,12 +113,18 @@ created with (never a hardcoded one, that would add a second translation and
 leave the served one untouched). An editorial note at the top of the section
 ends with a line that starts with `Applied with`.
 
-`lint` rejects, in the public sections:
+`lint` rejects, in the public sections and in every manifest `name` and
+`description` listed under `manifests`:
 
 - the words "bypass", "unlock", "circumvent" and their inflections, even inside
   a negation, plus anything in `lint.forbidden`
+- em dashes and en dashes (U+2014, U+2013) and emoji
 - a run of five or more comma-separated items of up to three words each, the
   pattern the Chrome Web Store rejects as keyword spam
+
+and for the files under `images`: a missing file, a PNG whose size differs
+from the declared one, and two files that are byte-identical (a tile that
+shows the wrong extension's logo has happened).
 
 ### README table
 

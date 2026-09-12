@@ -52,8 +52,25 @@ export function validate(raw, path = CONFIG_FILE) {
     listing: str(raw, "listing", "config"),
     readme: raw.readme === undefined ? "README.md" : str(raw, "readme", "config"),
     lint: { forbidden: [] },
+    manifests: [],
+    images: [],
     stores: {},
   };
+  if (raw.manifests !== undefined) {
+    if (!Array.isArray(raw.manifests) || !raw.manifests.every((f) => typeof f === "string" && f.length > 0)) throw bad("manifests must be an array of file paths");
+    cfg.manifests = [...raw.manifests];
+  }
+  if (raw.images !== undefined) {
+    if (!Array.isArray(raw.images)) throw bad("images must be an array");
+    cfg.images = raw.images.map((entry, i) => {
+      if (typeof entry === "string" && entry.length > 0) return { path: entry, size: null };
+      if (entry && typeof entry.path === "string" && entry.path.length > 0) {
+        if (entry.size !== undefined && !/^\d+x\d+$/.test(String(entry.size))) throw bad(`images[${i}].size must look like 1280x800`);
+        return { path: entry.path, size: entry.size ?? null };
+      }
+      throw bad(`images[${i}] must be a path or { path, size }`);
+    });
+  }
   if (raw.versionFiles !== undefined) {
     if (!Array.isArray(raw.versionFiles) || raw.versionFiles.length === 0 || !raw.versionFiles.every((f) => typeof f === "string" && f.length > 0)) {
       throw bad("versionFiles must be a non-empty array of file paths");

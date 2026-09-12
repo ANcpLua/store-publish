@@ -7,6 +7,12 @@
   "listing": "store/listing.md",
   "readme": "README.md",
   "lint": { "forbidden": [] },
+  "manifests": ["manifest.json"],
+  "images": [
+    { "path": "store/screenshots/01.png", "size": "1280x800" },
+    { "path": "store/promo-440x280.png", "size": "440x280" },
+    "store/icon-128.png"
+  ],
   "stores": {
     "chrome": {
       "id": "<32-character item id from the store URL>",
