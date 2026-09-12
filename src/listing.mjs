@@ -57,12 +57,12 @@ export async function runAmoListing(cfg, command) {
 
 export function runLint(cfg) {
   const problems = [];
-  for (const p of lintListing(readListing(cfg), cfg.lint.forbidden)) problems.push(`${cfg.listing}:${p.line}: ${p.message}`);
+  for (const p of lintListing(readListing(cfg), cfg.lint.forbidden, cfg.lint.brands)) problems.push(`${cfg.listing}:${p.line}: ${p.message}`);
   for (const p of lintManifests(cfg)) problems.push(p);
   for (const p of lintImages(cfg)) problems.push(p);
   const scope = [cfg.listing, ...cfg.manifests, cfg.images.length ? `${cfg.images.length} image(s)` : null].filter(Boolean).join(", ");
   if (problems.length === 0) {
-    console.log(`✓ ${scope}: no forbidden words, dashes, emoji or comma chains; images present and distinct`);
+    console.log(`✓ ${scope}: no forbidden words, brand names, dashes, emoji or comma chains; images present and distinct`);
     return;
   }
   for (const p of problems) console.log(`✗ ${p}`);
@@ -70,12 +70,16 @@ export function runLint(cfg) {
 }
 
 /** The rules every piece of public text must pass, applied to one line or field. */
-export function textProblems(text, extraForbidden = []) {
+export function textProblems(text, extraForbidden = [], brands = []) {
   const forbidden = [...DEFAULT_FORBIDDEN, ...extraForbidden];
   const problems = [];
   for (const word of forbidden) {
     const m = new RegExp(`\\b${escapeRegExp(word)}\\w*`, "i").exec(text);
     if (m) problems.push(`forbidden word "${m[0]}"`);
+  }
+  for (const brand of brands) {
+    const m = new RegExp(`\\b${escapeRegExp(brand)}\\b`, "i").exec(text);
+    if (m) problems.push(`brand name "${m[0]}"; say what it is (a browser, a video site), not whose it is`);
   }
   if (text.includes("\u2014")) problems.push("em dash (U+2014); use a comma, a colon or a new sentence");
   if (text.includes("\u2013")) problems.push("en dash (U+2013); use a hyphen or the word \"to\"");
@@ -104,7 +108,7 @@ export function lintManifests(cfg) {
     }
     for (const field of ["name", "description"]) {
       if (typeof json[field] !== "string") continue;
-      for (const p of textProblems(json[field], cfg.lint.forbidden)) problems.push(`${file}: ${field}: ${p}`);
+      for (const p of textProblems(json[field], cfg.lint.forbidden, cfg.lint.brands)) problems.push(`${file}: ${field}: ${p}`);
     }
   }
   return problems;
@@ -157,7 +161,7 @@ export function sectionText(md, heading) {
 }
 
 /** Every "## ... description" or "## ... summary" section is public text; the rest of the file is editorial. */
-export function lintListing(md, extraForbidden = []) {
+export function lintListing(md, extraForbidden = [], brands = []) {
   const problems = [];
   const lines = md.split("\n");
   let publicSection = false;
@@ -168,7 +172,7 @@ export function lintListing(md, extraForbidden = []) {
       continue;
     }
     if (!publicSection || line.trim() === "" || line.startsWith("Applied with")) continue;
-    for (const message of textProblems(line, extraForbidden)) problems.push({ line: i + 1, message });
+    for (const message of textProblems(line, extraForbidden, brands)) problems.push({ line: i + 1, message });
   }
   return problems;
 }

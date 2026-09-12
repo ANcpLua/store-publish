@@ -4,6 +4,9 @@ import { dirname, join, resolve } from "node:path";
 export const CONFIG_FILE = "store.config.json";
 export const STORES = ["chrome", "edge", "firefox"];
 
+/** Brand names that must not appear in public text (nominative use is legal but triggers automated enforcement). Override with lint.brands. */
+export const DEFAULT_BRANDS = ["Chrome", "Firefox", "Edge", "YouTube", "Vimeo", "Google", "Microsoft", "Mozilla"];
+
 /** Env vars each store's API client needs. The config's `env` lists must match. */
 export const ENV = {
   chrome: ["CWS_CLIENT_ID", "CWS_CLIENT_SECRET", "CWS_REFRESH_TOKEN", "CWS_PUBLISHER_ID"],
@@ -51,7 +54,7 @@ export function validate(raw, path = CONFIG_FILE) {
     versionFiles: [],
     listing: str(raw, "listing", "config"),
     readme: raw.readme === undefined ? "README.md" : str(raw, "readme", "config"),
-    lint: { forbidden: [] },
+    lint: { forbidden: [], brands: [...DEFAULT_BRANDS] },
     manifests: [],
     images: [],
     stores: {},
@@ -86,6 +89,12 @@ export function validate(raw, path = CONFIG_FILE) {
       }
       cfg.lint.forbidden = raw.lint.forbidden;
     }
+    if (raw.lint.brands !== undefined) {
+      if (!Array.isArray(raw.lint.brands) || !raw.lint.brands.every((w) => typeof w === "string")) {
+        throw bad("lint.brands must be an array of strings (empty to disable the brand check)");
+      }
+      cfg.lint.brands = [...raw.lint.brands];
+    }
   }
   if (raw.stores === null || typeof raw.stores !== "object") throw bad("stores must be an object");
   for (const store of STORES) {
@@ -103,7 +112,14 @@ export function validate(raw, path = CONFIG_FILE) {
     const expected = [...ENV[store]].sort().join(",");
     const actual = [...s.env].sort().join(",");
     if (expected !== actual) throw bad(`${where}.env must be exactly [${ENV[store].join(", ")}], got [${s.env.join(", ")}]`);
-    if (store === "firefox") entry.slug = str(s, "slug", where);
+    if (store === "firefox") {
+      entry.slug = str(s, "slug", where);
+      if (s.icon !== undefined) entry.icon = str(s, "icon", where);
+      if (s.previews !== undefined) {
+        if (!Array.isArray(s.previews) || !s.previews.every((f) => typeof f === "string" && f.length > 0)) throw bad(`${where}.previews must be an array of image paths`);
+        entry.previews = [...s.previews];
+      }
+    }
     if (store === "edge" && s.crxId !== undefined) entry.crxId = str(s, "crxId", where);
     if (s.expires !== undefined) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s.expires))) throw bad(`${where}.expires must be YYYY-MM-DD`);

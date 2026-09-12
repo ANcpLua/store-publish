@@ -19,6 +19,8 @@ export const COMMANDS = {
   upload: "upload and validate a zip without creating a version (--zip PATH, --channel listed|unlisted)",
   release: "upload, validate, create the version (--zip PATH, --notes \"text\", --source PATH)",
   status: "list the add-on's versions and their review status (read-only)",
+  icon: "set the listing icon from stores.firefox.icon or PATH (AMO resizes to 32/64/128); --diff only reports",
+  previews: "list | set: replace the listing screenshots with stores.firefox.previews or PATHs, in order",
 };
 
 export async function run(cfg, command, flags) {
@@ -44,6 +46,12 @@ export async function run(cfg, command, flags) {
       }
       break;
     }
+    case "icon":
+      await setIcon(cfg, flags);
+      break;
+    case "previews":
+      await previews(cfg, flags);
+      break;
     default:
       throw new Error(`firefox: unknown command ${command}`);
   }
@@ -96,11 +104,71 @@ async function createVersion(cfg, addonId, uploadUuid, flags) {
   return version;
 }
 
+/**
+ * The listing icon is an add-on field, not the manifest icon: an add-on
+ * without an uploaded icon shows AMO's default one. AMO resizes the upload
+ * to 32, 64 and 128 px.
+ */
+async function setIcon(cfg, flags) {
+  const slug = cfg.stores.firefox.slug;
+  const file = flags._positional?.[0] ?? cfg.stores.firefox.icon;
+  const before = await api(`/addons/addon/${slug}/`);
+  console.log(`current icon: ${before.icon_url}${isDefaultIcon(before.icon_url) ? "  (AMO default, none uploaded)" : ""}`);
+  if (flags.diff) return;
+  if (!file) throw new Error("no icon given: set stores.firefox.icon in store.config.json or pass a PATH");
+  const path = resolve(cfg.root, file);
+  if (!existsSync(path)) throw new Error(`icon not found: ${path}`);
+  const form = new FormData();
+  form.append("icon", new Blob([readFileSync(path)], { type: "image/png" }), basename(path));
+  const after = await api(`/addons/addon/${slug}/`, { method: "PATCH", body: form });
+  if (isDefaultIcon(after.icon_url)) throw new Error("PATCH returned OK but AMO still serves the default icon");
+  console.log(`✓ icon set from ${file}: ${after.icon_url}`);
+}
+
+export function isDefaultIcon(url) {
+  return typeof url !== "string" || /\/addon-icons\/default-\d+\.png/.test(url);
+}
+
+/** Listing screenshots ("previews"). `set` deletes what is there and uploads the given files in order. */
+async function previews(cfg, flags) {
+  const slug = cfg.stores.firefox.slug;
+  const [sub, ...paths] = flags._positional ?? [];
+  const current = (await api(`/addons/addon/${slug}/`)).previews ?? [];
+  if (!sub || sub === "list") {
+    if (current.length === 0) console.log("no previews");
+    for (const p of current) console.log(`  #${p.id} position=${p.position} ${p.image_size?.join("x") ?? "?"} ${p.image_url}`);
+    return;
+  }
+  if (sub !== "set") throw new Error(`firefox previews: unknown subcommand ${sub} (list | set)`);
+  const files = paths.length ? paths : (cfg.stores.firefox.previews ?? []);
+  if (files.length === 0) throw new Error("no previews given: set stores.firefox.previews in store.config.json or pass PATHs");
+  for (const file of files) {
+    if (!existsSync(resolve(cfg.root, file))) throw new Error(`preview not found: ${file}`);
+  }
+  for (const p of current) {
+    await api(`/addons/addon/${slug}/previews/${p.id}/`, { method: "DELETE" });
+    console.log(`  removed #${p.id}`);
+  }
+  let position = 0;
+  for (const file of files) {
+    const path = resolve(cfg.root, file);
+    const form = new FormData();
+    form.append("image", new Blob([readFileSync(path)], { type: "image/png" }), basename(path));
+    form.append("position", String(position++));
+    const created = await api(`/addons/addon/${slug}/previews/`, { method: "POST", body: form });
+    console.log(`  uploaded ${file} as #${created.id}`);
+  }
+  const after = (await api(`/addons/addon/${slug}/`)).previews ?? [];
+  if (after.length !== files.length) throw new Error(`expected ${files.length} previews after upload, AMO reports ${after.length}`);
+  console.log(`✓ ${files.length} preview(s) set`);
+}
+
 export async function api(path, init = {}) {
   const res = await fetch(`${API_ROOT}${path}`, {
     ...init,
     headers: { Authorization: `JWT ${amoJwt(required("AMO_JWT_ISSUER"), required("AMO_JWT_SECRET"))}`, ...(init.headers ?? {}) },
   });
   if (!res.ok) throw new Error(`${init.method ?? "GET"} ${path} failed (${res.status}): ${await res.text()}`);
+  if (res.status === 204) return {};
   return res.json();
 }

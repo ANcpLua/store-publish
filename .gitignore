@@ -3,3 +3,5 @@ node_modules/
 # The global gitignore on the author machine hides bin/ (a .NET habit); the CLI entry point lives there.
 !bin/
 !bin/**
+# Playwright MCP session artifacts
+.playwright-mcp/

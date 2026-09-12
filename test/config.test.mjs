@@ -8,6 +8,7 @@ import { lintImages, lintListing, lintManifests, pngSize, sectionText, textProbl
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
 import { checkVersions } from "../src/version.mjs";
+import { isDefaultIcon } from "../src/firefox.mjs";
 import { chromeLiveFromHtml, edgeLiveFromJson, firefoxLiveFromJson, hasEnv, renderStatus } from "../src/status.mjs";
 
 const sample = {
@@ -205,4 +206,27 @@ test("lintImages finds missing files, wrong sizes and byte-identical pairs", () 
     "d.txt: not a PNG, cannot check the size",
   ]);
   assert.throws(() => validate({ ...structuredClone(sample), images: [{ path: "x", size: "big" }] }), /images\[0\]\.size/);
+});
+
+test("brand names are rejected by default, configurable, and off with an empty list", () => {
+  const cfg = validate(structuredClone(sample));
+  assert.deepEqual(cfg.lint.brands, ["Chrome", "Firefox", "Edge", "YouTube", "Vimeo", "Google", "Microsoft", "Mozilla"]);
+  assert.deepEqual(textProblems("Uses Chrome's built-in on-device AI", [], cfg.lint.brands), ['brand name "Chrome"; say what it is (a browser, a video site), not whose it is']);
+  assert.deepEqual(textProblems("Opens in the browser sidebar", [], cfg.lint.brands), []);
+  assert.deepEqual(textProblems("Edgewise cut", [], cfg.lint.brands), [], "word boundary");
+  const off = validate({ ...structuredClone(sample), lint: { brands: [] } });
+  assert.deepEqual(off.lint.brands, []);
+  const md = "## AMO description\n\nWorks in Firefox's sidebar.\n";
+  assert.equal(lintListing(md, [], cfg.lint.brands).length, 1);
+  assert.equal(lintListing(md, [], []).length, 0);
+});
+
+test("firefox icon and previews config fields", () => {
+  const cfg = validate({ ...structuredClone(sample), stores: { ...sample.stores, firefox: { ...sample.stores.firefox, icon: "store/icon.png", previews: ["a.png", "b.png"] } } });
+  assert.equal(cfg.stores.firefox.icon, "store/icon.png");
+  assert.deepEqual(cfg.stores.firefox.previews, ["a.png", "b.png"]);
+  assert.throws(() => validate({ ...structuredClone(sample), stores: { ...sample.stores, firefox: { ...sample.stores.firefox, previews: "a.png" } } }), /previews must be an array/);
+  assert.equal(isDefaultIcon("https://addons.mozilla.org/static-server/img/addon-icons/default-64.png"), true);
+  assert.equal(isDefaultIcon("https://addons.mozilla.org/user-media/addon_icons/1/123-64.png?modified=1"), false);
+  assert.equal(isDefaultIcon(null), true);
 });

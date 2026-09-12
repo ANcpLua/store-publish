@@ -15,11 +15,11 @@ Add it as a git dependency and pin a tag:
 
 ```sh
 # bun
-bun add -d "github:ANcpLua/store-publish#v1.3.0"
+bun add -d "github:ANcpLua/store-publish#v1.4.0"
 # pnpm
-pnpm add -D "github:ANcpLua/store-publish#v1.3.0"
+pnpm add -D "github:ANcpLua/store-publish#v1.4.0"
 # npm
-npm install -D "github:ANcpLua/store-publish#v1.3.0"
+npm install -D "github:ANcpLua/store-publish#v1.4.0"
 ```
 
 The package has no dependencies and needs Node 22.11 or newer. The binary is
@@ -42,6 +42,9 @@ walking up from the working directory, or takes `--config PATH`.
 | `listing` | Markdown file with the store text, see below |
 | `readme` | File that carries the store table (default `README.md`) |
 | `lint.forbidden` | Extra words `lint` rejects, in addition to the built-in ones |
+| `lint.brands` | Brand names `lint` rejects in public text. Default: Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla. Set `[]` to disable |
+| `stores.firefox.icon` | Listing icon for AMO (`firefox icon`), AMO shows its default icon until one is uploaded; the manifest icon is not used |
+| `stores.firefox.previews` | Listing screenshots for AMO in order (`firefox previews set`) |
 | `manifests` | Extension manifests whose `name` and `description` (the store summary line) `lint` checks with the text rules |
 | `images` | Store images `lint` requires: `"path"` or `{ "path", "size": "1280x800" }`; missing files, wrong PNG sizes and byte-identical pairs fail |
 | `stores.<store>.id` | Chrome item id, Edge product GUID, Firefox add-on id |
@@ -68,6 +71,8 @@ Credentials are never in the config. They come from the environment:
 store-publish chrome  update|publish|release|status   [--zip PATH] [--item ID]
 store-publish edge    update|publish|release|status   [--zip PATH] [--notes TEXT]
 store-publish firefox upload|release|status           [--zip PATH] [--channel listed|unlisted] [--notes TEXT] [--source [PATH]]
+store-publish firefox icon [PATH] [--diff]
+store-publish firefox previews list | set [PATH...]
 store-publish amo-listing show|diff|apply
 store-publish lint
 store-publish readme [--write|--check]
@@ -118,6 +123,8 @@ ends with a line that starts with `Applied with`.
 
 - the words "bypass", "unlock", "circumvent" and their inflections, even inside
   a negation, plus anything in `lint.forbidden`
+- brand names from `lint.brands` ("Chrome's built-in AI" is nominative use and
+  still the kind of text that gets a trademark complaint)
 - em dashes and en dashes (U+2014, U+2013) and emoji
 - a run of five or more comma-separated items of up to three words each, the
   pattern the Chrome Web Store rejects as keyword spam

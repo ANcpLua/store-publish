@@ -12,7 +12,8 @@ const STORES = { chrome, edge, firefox };
 
 export async function main(argv) {
   const { positional, flags } = parseArgs(argv);
-  const [target, command] = positional;
+  const [target, command, ...rest] = positional;
+  flags._positional = rest;
   if (!target || target === "help" || flags.help) return usage();
 
   const cfg = loadConfig(findConfig(flags.config));

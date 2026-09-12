@@ -31,12 +31,20 @@ force push, diff before apply, trash instead of rm.
 
 ## Tool limits
 
+- One Playwright browser instance is shared by every session on this machine.
+  Only the coordinator drives it; other agents deliver file paths and the slot
+  assignment (which file goes into which dashboard field) and never click.
+  File uploads through Playwright work only from its allowed roots
+  (~/Developer/store-publish and its .playwright-mcp).
+- Chrome Web Store dashboard: the bare URL chrome.google.com/webstore/devconsole/
+  redirects to a passive Google sign-in even while signed in; the publisher URL
+  .../devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233 loads directly.
 - Chrome Web Store: a running review can be cancelled in the dashboard
   (item menu: Preview, Cancel review, Defer publish, Unpublish, Transfer,
   Roll back version; owner screenshot, item ahddbfbjafmbceehebpeanpnlbaimepk,
   2026-09-12). Only a package upload during a review is refused by the API.
   The dashboard is reachable only through the Playwright MCP browser, and
-  only while the owner is signed in there. The session expires after hours
+  only while the owner is signed in there (the session expires after hours). The session expires after hours
   and needs the owner to sign in again. The Chrome extension automation
   cannot read chrome.google.com/webstore at all ("The extensions gallery
   cannot be scripted").
@@ -97,6 +105,8 @@ force push, diff before apply, trash instead of rm.
 [DONE]    Vitest port of the node:test suite   Evidence: PR #62 merged, ci run 34700226558 green on main (reported by AgentB)
 [PENDING] 3.2.1 public text cleanup (em dashes, "Free.", browser names out of manifest descriptions and UI strings; on main)   waits on: Chrome, Edge and Firefox 3.2.0 reviews before it is released
 [PENDING] Store images redo (five real 1280x800 panel screenshots, 440x280 tile, 1400x560 marquee, no arrow, no browser name)   waits on: branch and PR by AgentB; upload after the 3.2.0 reviews
+[DONE]    Chrome store icon replaced in the dashboard draft (store/images/icon-128x128.png, "Item saved." 14:58 UTC, not submitted)   Evidence: coordinator session, dashboard message
+[PENDING] listing.md brand names ("Chrome's built-in on-device AI", "Firefox's sidebar")   waits on: AgentB; `store-publish lint` v1.4.0 reports them with the default lint.brands list
 [PENDING] manifest.json and manifest.firefox.json description carry an em dash   waits on: AgentB; `store-publish lint` v1.3.0 with "manifests" in store.config.json reports both (verified 2026-09-12 against main through a scratch config)
 [DONE]    store-publish v1.1.0 adopted, versionFiles check   Evidence: AgentB commit 18ad3bc, edge status dispatch green (reported by AgentB)
 ```
