@@ -9,6 +9,10 @@ copies the config file and changes the ids.
 Used by [save-media](https://github.com/ANcpLua/save-media) and
 [yt-transcript](https://github.com/ANcpLua/yt-transcript).
 
+All six targets (two extensions, three stores each), how to obtain API access
+per store, and the current policy and guide links are in
+[docs/PUBLISHING.md](docs/PUBLISHING.md).
+
 ## Install
 
 Add it as a git dependency and pin a tag:
