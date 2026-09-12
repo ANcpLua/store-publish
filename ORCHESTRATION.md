@@ -53,6 +53,9 @@ force push, diff before apply, trash instead of rm.
 - AMO listing text is written by `store-publish amo-listing apply` under the
   add-on's own default locale (`de` for both extensions although the text is
   English; never hardcode a locale).
+- Files for an upload dialog: put a copy exactly where the dialog opens (or
+  where the owner says), name the absolute path once, no Finder windows, no
+  extra browser tabs (owner rule, CLAUDE.md Assets 2026-09-12).
 - Store icons are listing fields, not package contents, on every store.
   Chrome: "Store icon" under Store listing, Graphic assets; the package must
   also carry a 128x128 icon ("You must provide a 128x128-pixel extension icon
@@ -118,7 +121,9 @@ force push, diff before apply, trash instead of rm.
 ```
 [DONE]    Chrome 3.2.1 submitted: description without browser names, store icon, 5 UI screenshots, 440x280 tile, 1400x560 marquee, auto-publish   Evidence: status run 34701679765 (15:15 UTC) published 3.1.0, submitted 3.2.1 PENDING_REVIEW; release run 34701390181 (chrome update)
 [DONE]    Firefox 3.2.1 submitted   Evidence: release run 34701391394
-[PENDING] Edge 3.2.1   waits on: certification of 3.2.0, then release.yml stores=edge; afterwards the Edge listing (text, logo, images) through the coordinator's Playwright
+[DONE]    Edge package from 3.2.1 without tabCapture/offscreen (manifest.edge.json, own dist without offscreen/)   Evidence: yt-transcript f735749, ci run 34707926465; Microsoft policy 1.6 forbids unused permissions, the form warns "Requesting an unnecessary permission will result in this version being rejected"
+[PENDING] Edge 3.2.1 publish: the owner replaces the hand-uploaded package in Partner Center with /Users/ancplua/Developer/yt-transcript/video-transcript-edge-3.2.1.zip, fills Properties (4 permissions), the Edge description and 7 images, clicks Publish   waits on: the owner
+          Note, not an error: the Edge 3.2.1 zip additionally carries the track tie-break from 3ea0c76 that Chrome/Firefox 3.2.1 do not have; same version, one bugfix apart, identical again from 3.2.2
 [DONE]    AMO previews positions 0-2 for Video Transcript with v1.4.3   Evidence: run 34704549670 kept #408195 (pos 0), uploaded #408196 (pos 1), #408197 (pos 2), all 1280x800; stopped cleanly at the daily cap ("Expected available in 59126 seconds")
 [PENDING] AMO previews positions 3 and 4 for Video Transcript   waits on: 2026-09-13 09:00 UTC, one dispatch by AgentB
 [PENDING] Playwright flake: rankTrack tie-break   waits on: AgentB, commit on main
