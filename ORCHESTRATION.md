@@ -68,6 +68,10 @@ force push, diff before apply, trash instead of rm.
   (https://mozilla.github.io/addons-server/topics/api/addons.html). savemedia
   on AMO serves the default icon today (icon_url ends in
   addon-icons/default-64.png), so the icon was never uploaded there.
+- AMO's API answers with cache-control max-age=360. A read without a cache
+  buster (`?_=<timestamp>`) can be six minutes stale and shows an icon or
+  previews change as not applied. store-publish appends one on every
+  read-back and in `status` since v1.4.2.
 - Credentials: never regenerate a key to fix a 401. AMO has one key pair per
   account shared by both repositories; a new one invalidates the old one
   everywhere. Store secrets can only be exercised in a workflow run.

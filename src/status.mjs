@@ -103,7 +103,8 @@ async function firefoxRow(cfg, env) {
   const s = cfg.stores.firefox;
   const row = { store: "Firefox Add-ons (AMO)", id: s.id, url: s.url, live: "?", updated: "", review: "", credentials: "" };
   try {
-    const res = await fetch(`${AMO_PUBLIC}/${s.slug}/`, { headers: { "User-Agent": USER_AGENT } });
+    // AMO caches for six minutes; the buster makes the table reflect the moment it was generated.
+    const res = await fetch(`${AMO_PUBLIC}/${s.slug}/?_=${Date.now()}`, { headers: { "User-Agent": USER_AGENT } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const live = firefoxLiveFromJson(await res.json());
     row.live = live.version ?? "not found";

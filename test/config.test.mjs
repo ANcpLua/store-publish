@@ -8,7 +8,7 @@ import { lintImages, lintListing, lintManifests, pngSize, sectionText, textProbl
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
 import { checkVersions } from "../src/version.mjs";
-import { isDefaultIcon } from "../src/firefox.mjs";
+import { bust, isDefaultIcon } from "../src/firefox.mjs";
 import { chromeLiveFromHtml, edgeLiveFromJson, firefoxLiveFromJson, hasEnv, renderStatus } from "../src/status.mjs";
 
 const sample = {
@@ -248,4 +248,8 @@ test("firefox module resolves asset paths against the config root (regression: r
     globalThis.fetch = realFetch;
     delete process.env.AMO_JWT_ISSUER; delete process.env.AMO_JWT_SECRET;
   }
+});
+
+test("AMO reads carry a cache buster", () => {
+  assert.match(bust(), /^\?_=\d{13,}$/);
 });

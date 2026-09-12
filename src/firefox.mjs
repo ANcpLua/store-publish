@@ -112,7 +112,7 @@ async function createVersion(cfg, addonId, uploadUuid, flags) {
 async function setIcon(cfg, flags) {
   const slug = cfg.stores.firefox.slug;
   const file = flags._positional?.[0] ?? cfg.stores.firefox.icon;
-  const before = await api(`/addons/addon/${slug}/`);
+  const before = await api(`/addons/addon/${slug}/${bust()}`);
   console.log(`current icon: ${before.icon_url}${isDefaultIcon(before.icon_url) ? "  (AMO default, none uploaded)" : ""}`);
   if (flags.diff) return;
   if (!file) throw new Error("no icon given: set stores.firefox.icon in store.config.json or pass a PATH");
@@ -125,6 +125,11 @@ async function setIcon(cfg, flags) {
   console.log(`✓ icon set from ${file}: ${after.icon_url}`);
 }
 
+/** AMO answers with cache-control max-age=360; a read-back without a cache buster can be six minutes stale. */
+export function bust() {
+  return `?_=${Date.now()}`;
+}
+
 export function isDefaultIcon(url) {
   return typeof url !== "string" || /\/addon-icons\/default-\d+\.png/.test(url);
 }
@@ -133,7 +138,7 @@ export function isDefaultIcon(url) {
 async function previews(cfg, flags) {
   const slug = cfg.stores.firefox.slug;
   const [sub, ...paths] = flags._positional ?? [];
-  const current = (await api(`/addons/addon/${slug}/`)).previews ?? [];
+  const current = (await api(`/addons/addon/${slug}/${bust()}`)).previews ?? [];
   if (!sub || sub === "list") {
     if (current.length === 0) console.log("no previews");
     for (const p of current) console.log(`  #${p.id} position=${p.position} ${p.image_size?.join("x") ?? "?"} ${p.image_url}`);
@@ -158,7 +163,7 @@ async function previews(cfg, flags) {
     const created = await api(`/addons/addon/${slug}/previews/`, { method: "POST", body: form });
     console.log(`  uploaded ${file} as #${created.id}`);
   }
-  const after = (await api(`/addons/addon/${slug}/`)).previews ?? [];
+  const after = (await api(`/addons/addon/${slug}/${bust()}`)).previews ?? [];
   if (after.length !== files.length) throw new Error(`expected ${files.length} previews after upload, AMO reports ${after.length}`);
   console.log(`✓ ${files.length} preview(s) set`);
 }
