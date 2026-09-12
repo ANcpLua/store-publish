@@ -15,11 +15,11 @@ Add it as a git dependency and pin a tag:
 
 ```sh
 # bun
-bun add -d "github:ANcpLua/store-publish#v1.1.0"
+bun add -d "github:ANcpLua/store-publish#v1.2.0"
 # pnpm
-pnpm add -D "github:ANcpLua/store-publish#v1.1.0"
+pnpm add -D "github:ANcpLua/store-publish#v1.2.0"
 # npm
-npm install -D "github:ANcpLua/store-publish#v1.1.0"
+npm install -D "github:ANcpLua/store-publish#v1.2.0"
 ```
 
 The package has no dependencies and needs Node 22.11 or newer. The binary is
@@ -70,8 +70,17 @@ store-publish amo-listing show|diff|apply
 store-publish lint
 store-publish readme [--write|--check]
 store-publish version [--tag TAG]
+store-publish status [--markdown|--json]
 store-publish config
 ```
+
+`status` asks every store at once. The live version and date come from the
+public listings and need no credentials (Chrome Web Store page, Edge
+`getproductdetailsbycrxid`, AMO public API). The review column and the
+credential check use the env vars when they are set and say "not in env"
+otherwise. `--markdown` prints a table with a timestamp and the generating
+command in a comment; paste that into documents instead of typing a version
+by hand.
 
 `version` reads every file in `versionFiles`, fails when they do not carry
 the same version (or when `--tag vX.Y.Z` names a different one), and prints

@@ -8,6 +8,7 @@ import { lintListing, sectionText } from "../src/listing.mjs";
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
 import { checkVersions } from "../src/version.mjs";
+import { chromeLiveFromHtml, edgeLiveFromJson, firefoxLiveFromJson, hasEnv, renderStatus } from "../src/status.mjs";
 
 const sample = {
   name: "demo",
@@ -140,4 +141,22 @@ test("versionFiles defaults to versionFrom and always includes it", () => {
   assert.deepEqual(validate(structuredClone(sample)).versionFiles, ["packages/extension/manifest.json"]);
   const cfg = validate({ ...structuredClone(sample), versionFiles: ["package.json"] });
   assert.deepEqual(cfg.versionFiles, ["packages/extension/manifest.json", "package.json"]);
+});
+
+test("status parsers read the public listings", () => {
+  const html = '<li><div class="a">Version</div><div class="b">0.0.7</div></li><li><div class="a">Updated</div><div>August 2, 2026</div></li>';
+  assert.deepEqual(chromeLiveFromHtml(html), { version: "0.0.7", updated: "August 2, 2026" });
+  assert.deepEqual(chromeLiveFromHtml("<html></html>"), { version: null, updated: null });
+  assert.deepEqual(edgeLiveFromJson({ version: "0.0.7", lastUpdateDate: 1788983347.44 }), { version: "0.0.7", updated: "2026-09-09" });
+  assert.deepEqual(firefoxLiveFromJson({ current_version: { version: "3.1.0" }, last_updated: "2026-09-12T08:41:41Z", status: "public" }), { version: "3.1.0", updated: "2026-09-12", status: "public" });
+  assert.equal(hasEnv("edge", { EDGE_API_KEY: "k", EDGE_CLIENT_ID: "c" }), true);
+  assert.equal(hasEnv("edge", { EDGE_API_KEY: "k" }), false);
+});
+
+test("renderStatus stamps the table with time, command and config", () => {
+  const cfg = { ...validate(structuredClone(sample)), path: "/x/store.config.json" };
+  const rows = [{ store: "Chrome Web Store", url: "https://c", live: "1.0.0", updated: "2026-09-01", review: "published 1.0.0 (PUBLISHED)", credentials: "accepted" }];
+  const md = renderStatus(cfg, rows, { now: new Date("2026-09-12T15:00:00Z") });
+  assert.match(md, /^<!-- generated 2026-09-12T15:00:00.000Z by `store-publish status --markdown` from .*store\.config\.json \(demo\); regenerate, do not edit -->/);
+  assert.match(md, /\| \[Chrome Web Store\]\(https:\/\/c\) \| 1\.0\.0 \| 2026-09-01 \| published 1\.0\.0 \(PUBLISHED\) \| accepted \|/);
 });

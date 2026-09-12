@@ -84,10 +84,10 @@ async function publishSubmission(base, headers, notes) {
  * clipboard paste gone wrong) shows up as a wrong length before anything else.
  */
 async function probe(base, headers, { apiKey, clientId, productId, expires }) {
-  const res = await fetch(`${base}/submissions/operations/00000000-0000-0000-0000-000000000000`, { headers });
+  const { status } = await probeCredentials(base, headers);
   console.log(`key length: ${apiKey.length}  client id length: ${clientId.length}  product id length: ${productId.length}`);
-  console.log(`probe returned HTTP ${res.status}`);
-  if (res.status === 401) {
+  console.log(`probe returned HTTP ${status}`);
+  if (status === 401) {
     throw new Error("Edge rejected the credentials (401). EDGE_API_KEY or EDGE_CLIENT_ID is wrong or expired.");
   }
   console.log("✓ credentials accepted");
@@ -97,6 +97,19 @@ async function probe(base, headers, { apiKey, clientId, productId, expires }) {
     const note = days <= EXPIRY_WARN_DAYS ? "  ← renew soon" : "";
     console.log(`API key expires ${expires} (${days} days left)${note}`);
   }
+}
+
+async function probeCredentials(base, headers) {
+  const res = await fetch(`${base}/submissions/operations/00000000-0000-0000-0000-000000000000`, { headers });
+  return { status: res.status };
+}
+
+/** For `status`: whether the API accepts the credentials in env, plus the configured expiry. */
+export async function credentialStatus(cfg) {
+  const store = cfg.stores.edge;
+  const headers = { Authorization: `ApiKey ${required("EDGE_API_KEY")}`, "X-ClientID": required("EDGE_CLIENT_ID") };
+  const { status } = await probeCredentials(`${API_ROOT}/v1/products/${store.id}`, headers);
+  return { accepted: status !== 401, httpStatus: status, expires: store.expires ?? null, daysLeft: store.expires ? daysUntil(store.expires) : null };
 }
 
 async function poll(url, headers, label) {

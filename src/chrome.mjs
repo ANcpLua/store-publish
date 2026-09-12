@@ -38,13 +38,23 @@ export async function run(cfg, command, flags) {
       await publishItem(token, itemBase);
       break;
     case "status": {
-      const status = await api(token, `/v2/${itemBase}:fetchStatus`, { method: "GET" });
-      console.log(JSON.stringify(status, null, 2));
+      console.log(JSON.stringify(await fetchStatus(token, itemBase), null, 2));
       break;
     }
     default:
       throw new Error(`chrome: unknown command ${command}`);
   }
+}
+
+/** Review and publish state of the item; needs the four CWS_* env vars. */
+export async function itemStatus(cfg, flags = {}) {
+  const itemId = flags.item ?? cfg.stores.chrome.id;
+  const itemBase = `publishers/${required("CWS_PUBLISHER_ID")}/items/${itemId}`;
+  return fetchStatus(await accessToken(), itemBase);
+}
+
+function fetchStatus(token, itemBase) {
+  return api(token, `/v2/${itemBase}:fetchStatus`, { method: "GET" });
 }
 
 async function accessToken() {

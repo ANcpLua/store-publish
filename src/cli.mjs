@@ -6,6 +6,7 @@ import * as firefox from "./firefox.mjs";
 import { AMO_COMMANDS, runAmoListing, runLint } from "./listing.mjs";
 import { runReadme } from "./readme.mjs";
 import { runVersion } from "./version.mjs";
+import { runStatus } from "./status.mjs";
 
 const STORES = { chrome, edge, firefox };
 
@@ -29,6 +30,8 @@ export async function main(argv) {
       return runLint(cfg);
     case "readme":
       return runReadme(cfg, flags);
+    case "status":
+      return runStatus(cfg, flags);
     case "version":
       return runVersion(cfg, flags);
     case "config":
@@ -54,6 +57,7 @@ ${list(firefox.COMMANDS)}
 ${list(AMO_COMMANDS)}
   store-publish lint                 check the listing file for forbidden words and comma chains
   store-publish readme [--write|--check]   render the store table, write it into the README, or verify it
+  store-publish status [--markdown|--json]   live version of every store from the public listings, plus review state and credential check where env allows
   store-publish version [--tag TAG]  fail unless every versionFiles entry (and the tag) carries the same version; prints it
   store-publish config               print the resolved configuration
 
