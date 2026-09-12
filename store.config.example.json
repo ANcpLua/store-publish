@@ -1,0 +1,35 @@
+{
+  "name": "my-extension",
+  "zipPrefix": "my-extension",
+  "zipDir": ".",
+  "versionFrom": "manifest.json",
+  "listing": "store/listing.md",
+  "readme": "README.md",
+  "lint": { "forbidden": [] },
+  "stores": {
+    "chrome": {
+      "id": "<32-character item id from the store URL>",
+      "url": "https://chromewebstore.google.com/detail/<slug>/<item id>",
+      "dashboard": "https://chrome.google.com/webstore/devconsole",
+      "apiDocs": "https://developer.chrome.com/docs/webstore/using-api",
+      "env": ["CWS_CLIENT_ID", "CWS_CLIENT_SECRET", "CWS_REFRESH_TOKEN", "CWS_PUBLISHER_ID"]
+    },
+    "edge": {
+      "id": "<product GUID from Partner Center>",
+      "crxId": "<32-character id from the store URL>",
+      "url": "https://microsoftedge.microsoft.com/addons/detail/<slug>/<crx id>",
+      "dashboard": "https://partner.microsoft.com/en-us/dashboard/microsoftedge/<product GUID>/packages/dashboard",
+      "apiDocs": "https://learn.microsoft.com/microsoft-edge/extensions/update/api/using-addons-api",
+      "env": ["EDGE_API_KEY", "EDGE_CLIENT_ID"],
+      "expires": "YYYY-MM-DD"
+    },
+    "firefox": {
+      "id": "<add-on id from manifest browser_specific_settings.gecko.id>",
+      "slug": "<slug from the AMO URL>",
+      "url": "https://addons.mozilla.org/firefox/addon/<slug>/",
+      "dashboard": "https://addons.mozilla.org/developers/addon/<slug>/edit",
+      "apiDocs": "https://mozilla.github.io/addons-server/topics/api/addons.html",
+      "env": ["AMO_JWT_ISSUER", "AMO_JWT_SECRET"]
+    }
+  }
+}

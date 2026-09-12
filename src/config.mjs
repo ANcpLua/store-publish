@@ -1,0 +1,106 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+
+export const CONFIG_FILE = "store.config.json";
+export const STORES = ["chrome", "edge", "firefox"];
+
+/** Env vars each store's API client needs. The config's `env` lists must match. */
+export const ENV = {
+  chrome: ["CWS_CLIENT_ID", "CWS_CLIENT_SECRET", "CWS_REFRESH_TOKEN", "CWS_PUBLISHER_ID"],
+  edge: ["EDGE_API_KEY", "EDGE_CLIENT_ID"],
+  firefox: ["AMO_JWT_ISSUER", "AMO_JWT_SECRET"],
+};
+
+/** Walk up from `start` until a store.config.json is found. */
+export function findConfig(explicit, start = process.cwd()) {
+  if (explicit) {
+    const p = resolve(start, explicit);
+    if (!existsSync(p)) throw new Error(`config not found: ${p}`);
+    return p;
+  }
+  let dir = resolve(start);
+  for (;;) {
+    const candidate = join(dir, CONFIG_FILE);
+    if (existsSync(candidate)) return candidate;
+    const parent = dirname(dir);
+    if (parent === dir) throw new Error(`no ${CONFIG_FILE} found in ${start} or any parent directory`);
+    dir = parent;
+  }
+}
+
+export function loadConfig(path) {
+  const raw = JSON.parse(readFileSync(path, "utf8"));
+  const root = dirname(path);
+  const cfg = validate(raw, path);
+  const version = readVersion(resolve(root, cfg.versionFrom));
+  return { ...cfg, root, path, version };
+}
+
+export function validate(raw, path = CONFIG_FILE) {
+  const bad = (msg) => new Error(`${path}: ${msg}`);
+  const str = (obj, key, where) => {
+    if (typeof obj[key] !== "string" || obj[key].length === 0) throw bad(`${where}.${key} must be a non-empty string`);
+    return obj[key];
+  };
+  if (raw === null || typeof raw !== "object") throw bad("must be a JSON object");
+  const cfg = {
+    name: str(raw, "name", "config"),
+    zipPrefix: str(raw, "zipPrefix", "config"),
+    zipDir: raw.zipDir === undefined ? "." : str(raw, "zipDir", "config"),
+    versionFrom: str(raw, "versionFrom", "config"),
+    listing: str(raw, "listing", "config"),
+    readme: raw.readme === undefined ? "README.md" : str(raw, "readme", "config"),
+    lint: { forbidden: [] },
+    stores: {},
+  };
+  if (raw.lint !== undefined) {
+    if (raw.lint === null || typeof raw.lint !== "object") throw bad("lint must be an object");
+    if (raw.lint.forbidden !== undefined) {
+      if (!Array.isArray(raw.lint.forbidden) || !raw.lint.forbidden.every((w) => typeof w === "string")) {
+        throw bad("lint.forbidden must be an array of strings");
+      }
+      cfg.lint.forbidden = raw.lint.forbidden;
+    }
+  }
+  if (raw.stores === null || typeof raw.stores !== "object") throw bad("stores must be an object");
+  for (const store of STORES) {
+    const s = raw.stores[store];
+    if (s === undefined) throw bad(`stores.${store} is missing`);
+    const where = `stores.${store}`;
+    const entry = {
+      id: str(s, "id", where),
+      url: str(s, "url", where),
+      dashboard: str(s, "dashboard", where),
+      apiDocs: str(s, "apiDocs", where),
+      env: s.env,
+    };
+    if (!Array.isArray(s.env) || !s.env.every((e) => typeof e === "string")) throw bad(`${where}.env must be an array of strings`);
+    const expected = [...ENV[store]].sort().join(",");
+    const actual = [...s.env].sort().join(",");
+    if (expected !== actual) throw bad(`${where}.env must be exactly [${ENV[store].join(", ")}], got [${s.env.join(", ")}]`);
+    if (store === "firefox") entry.slug = str(s, "slug", where);
+    if (store === "edge" && s.crxId !== undefined) entry.crxId = str(s, "crxId", where);
+    if (s.expires !== undefined) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s.expires))) throw bad(`${where}.expires must be YYYY-MM-DD`);
+      entry.expires = s.expires;
+    }
+    if (s.notes !== undefined) entry.notes = str(s, "notes", where);
+    cfg.stores[store] = entry;
+  }
+  return cfg;
+}
+
+function readVersion(file) {
+  if (!existsSync(file)) throw new Error(`versionFrom file not found: ${file}`);
+  const json = JSON.parse(readFileSync(file, "utf8"));
+  if (typeof json.version !== "string") throw new Error(`${file} has no "version" string`);
+  return json.version;
+}
+
+export function zipName(cfg, kind) {
+  return `${cfg.zipPrefix}-${kind}-${cfg.version}.zip`;
+}
+
+export function zipPath(cfg, kind, override) {
+  return resolve(cfg.root, override ?? join(cfg.zipDir, zipName(cfg, kind)));
+}
