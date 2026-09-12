@@ -72,10 +72,15 @@ force push, diff before apply, trash instead of rm.
   buster (`?_=<timestamp>`) can be six minutes stale and shows an icon or
   previews change as not applied. store-publish appends one on every
   read-back and in `status` since v1.4.2.
-- AMO throttles preview writes: after one preview upload a caption PATCH
-  answered HTTP 429 "Expected available in 689 seconds" (AgentB, 2026-09-12).
-  Do not repeat `firefox previews set` within twelve minutes; a run that was
-  cut off can leave a caption-less preview, the next `set` replaces it.
+- AMO throttles image writes twice: a burst limit of seconds to minutes
+  ("Expected available in 20/689/979/1489 seconds") and a per-account daily
+  cap on image uploads that counts the icon and previews together (after
+  three uploads on 2026-09-12: "Expected available in 59126 seconds", free
+  again about 2026-09-13 08:39 UTC). store-publish v1.4.3 waits for the
+  burst limit and stops cleanly at the daily cap (30 min ceiling per wait);
+  `firefox previews set` is idempotent, so the next day's run continues at
+  the first missing position. Plan icon plus screenshots for one extension
+  per day.
 - Credentials: never regenerate a key to fix a 401. AMO has one key pair per
   account shared by both repositories; a new one invalidates the old one
   everywhere. Store secrets can only be exercised in a workflow run.
@@ -112,7 +117,8 @@ force push, diff before apply, trash instead of rm.
 [DONE]    Chrome 3.2.1 submitted: description without browser names, store icon, 5 UI screenshots, 440x280 tile, 1400x560 marquee, auto-publish   Evidence: status run 34701679765 (15:15 UTC) published 3.1.0, submitted 3.2.1 PENDING_REVIEW; release run 34701390181 (chrome update)
 [DONE]    Firefox 3.2.1 submitted   Evidence: release run 34701391394
 [PENDING] Edge 3.2.1   waits on: certification of 3.2.0, then release.yml stores=edge; afterwards the Edge listing (text, logo, images) through the coordinator's Playwright
-[PENDING] AMO previews (429 throttle, retry after 12 min) and AMO icon for Video Transcript   waits on: AgentB with v1.4.2
+[DONE]    AMO previews positions 0-2 for Video Transcript with v1.4.3   Evidence: run 34704549670 kept #408195 (pos 0), uploaded #408196 (pos 1), #408197 (pos 2), all 1280x800; stopped cleanly at the daily cap ("Expected available in 59126 seconds")
+[PENDING] AMO previews positions 3 and 4 for Video Transcript   waits on: the daily cap, one more amo-previews-apply run on 2026-09-13 after 08:39 UTC (AgentB)
 [PENDING] Playwright flake: rankTrack tie-break   waits on: AgentB, commit on main
 [DONE]    v3.2.0 released to all three stores   Evidence: release run 34699894419 green (tag pushed 14:38:46 UTC after coordinator go-ahead; later confirmed "Tag jetzt")
 [AMBIG]   3.2.0 Chrome review vs 3.2.1 with new images   Options: wait for 3.2.0 | cancel the review and submit 3.2.1   Decision (coordinator, 2026-09-12): cancel the Chrome review of 3.2.0; 3.2.1 goes to Chrome and Firefox today with the new images in one submission, Edge after its 3.2.0 certification
@@ -131,6 +137,7 @@ force push, diff before apply, trash instead of rm.
 
 ```
 [DONE]    v1.3.0: lint covers dashes, emoji, manifest name/description, store images (presence, PNG size, duplicates)   Evidence: node --test 17 pass; save-media lint green with manifests and 6 images; yt-transcript manifests red as expected
+[DONE]    v1.4.3: every AMO call retries on 429 after the wait AMO names (Retry-After fallback, N+2 s, 30 min ceiling, 6 retries); `firefox previews set` idempotent by position and pixel size, upload before delete, `--replace`   Evidence: node --test 23 pass; yt-transcript run 34704549670 (issue #2 closed)
 [DONE]    v1.4.0/v1.4.1: lint.brands (default Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla), `firefox icon [PATH] [--diff]`, `firefox previews list|set`, config stores.firefox.icon/previews, .playwright-mcp untracked   Evidence: node --test 20 pass; save-media lint green after moving an editorial note out of a public section; yt-transcript listing.md reports "Chrome" and "Firefox" (lines 46, 48) through a scratch config
 [DONE]    yt-transcript pinned at v1.4.1, interim scripts dropped, store-status.yml runs firefox icon/previews, lint.brands green   Evidence: reported by AgentB 2026-09-12; v1.4.2 (cache buster only) still to pin
 ```
