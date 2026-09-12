@@ -33,16 +33,39 @@ export function edgeLiveFromJson(json) {
 }
 
 export function firefoxLiveFromJson(json) {
+  const previews = Array.isArray(json.previews)
+    ? [...json.previews]
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .map((p) => ({ id: p.id, position: p.position ?? null, size: Array.isArray(p.image_size) ? p.image_size.join("x") : null }))
+    : [];
   return {
     version: json.current_version?.version ?? null,
     updated: typeof json.last_updated === "string" ? json.last_updated.slice(0, 10) : null,
     status: json.status ?? null,
+    previews,
   };
+}
+
+/**
+ * The Chrome developer dashboard addresses an item under the publisher, so
+ * the item page can only be built when CWS_PUBLISHER_ID is in the env; the
+ * config's dashboard (usually the console root) is the fallback.
+ */
+export function chromeDashboardUrl(cfg, env = process.env) {
+  const publisher = env.CWS_PUBLISHER_ID;
+  if (!publisher) return cfg.stores.chrome.dashboard;
+  return `https://chrome.google.com/webstore/devconsole/${publisher}/${cfg.stores.chrome.id}/edit/listing`;
+}
+
+/** "#12 (0), #13 (1)": preview ids with their positions, for the review column. */
+export function previewSummary(previews) {
+  if (!previews?.length) return "";
+  return `previews ${previews.map((p) => `#${p.id}${p.position === null ? "" : ` (${p.position})`}`).join(", ")}`;
 }
 
 async function chromeRow(cfg, env) {
   const s = cfg.stores.chrome;
-  const row = { store: "Chrome Web Store", id: s.id, url: s.url, live: "?", updated: "", review: "", credentials: "" };
+  const row = { store: "Chrome Web Store", id: s.id, url: s.url, dashboard: chromeDashboardUrl(cfg, env), live: "?", updated: "", review: "", credentials: "" };
   try {
     const res = await fetch(s.url, { headers: { "User-Agent": USER_AGENT, "Accept-Language": "en" } });
     const live = chromeLiveFromHtml(await res.text());
@@ -74,7 +97,7 @@ async function chromeRow(cfg, env) {
 
 async function edgeRow(cfg, env) {
   const s = cfg.stores.edge;
-  const row = { store: "Microsoft Edge Add-ons", id: s.id, url: s.url, live: "?", updated: "", review: "not exposed by the API, read Partner Center", credentials: "" };
+  const row = { store: "Microsoft Edge Add-ons", id: s.id, url: s.url, dashboard: s.dashboard, live: "?", updated: "", review: "not exposed by the API, read Partner Center", credentials: "" };
   try {
     if (!s.crxId) throw new Error("stores.edge.crxId missing in store.config.json");
     const res = await fetch(`${EDGE_PUBLIC}/${s.crxId}`, { headers: { "User-Agent": USER_AGENT } });
@@ -101,7 +124,7 @@ async function edgeRow(cfg, env) {
 
 async function firefoxRow(cfg, env) {
   const s = cfg.stores.firefox;
-  const row = { store: "Firefox Add-ons (AMO)", id: s.id, url: s.url, live: "?", updated: "", review: "", credentials: "" };
+  const row = { store: "Firefox Add-ons (AMO)", id: s.id, url: s.url, dashboard: s.dashboard, live: "?", updated: "", review: "", credentials: "", previews: [] };
   try {
     // AMO caches for six minutes; the buster makes the table reflect the moment it was generated.
     const res = await fetch(`${AMO_PUBLIC}/${s.slug}/?_=${Date.now()}`, { headers: { "User-Agent": USER_AGENT } });
@@ -109,7 +132,8 @@ async function firefoxRow(cfg, env) {
     const live = firefoxLiveFromJson(await res.json());
     row.live = live.version ?? "not found";
     row.updated = live.updated ?? "";
-    row.review = live.status ? `listing ${live.status}` : "";
+    row.previews = live.previews;
+    row.review = [live.status ? `listing ${live.status}` : "", previewSummary(live.previews)].filter(Boolean).join("; ");
   } catch (err) {
     row.live = `error: ${err.message}`;
   }
@@ -136,11 +160,11 @@ export function renderStatus(cfg, rows, { now = new Date(), command = "store-pub
   const from = relative(process.cwd(), cfg.path) || cfg.path;
   const lines = [
     `<!-- generated ${now.toISOString()} by \`${command}\` from ${from} (${cfg.name}); regenerate, do not edit -->`,
-    "| Store | Live version | Live since | Review / submission | API credentials |",
-    "| --- | --- | --- | --- | --- |",
+    "| Store | Live version | Live since | Review / submission | API credentials | Dashboard |",
+    "| --- | --- | --- | --- | --- | --- |",
   ];
   for (const r of rows) {
-    lines.push(`| [${r.store}](${r.url}) | ${r.live} | ${r.updated} | ${r.review} | ${r.credentials} |`);
+    lines.push(`| [${r.store}](${r.url}) | ${r.live} | ${r.updated} | ${r.review} | ${r.credentials} | ${r.dashboard ? `[open](${r.dashboard})` : ""} |`);
   }
   return lines.join("\n");
 }
@@ -160,5 +184,6 @@ export async function runStatus(cfg, flags) {
     console.log(`  live:        ${r.live}${r.updated ? ` (since ${r.updated})` : ""}`);
     if (r.review) console.log(`  review:      ${r.review}`);
     console.log(`  credentials: ${r.credentials}`);
+    if (r.dashboard) console.log(`  dashboard:   ${r.dashboard}`);
   }
 }

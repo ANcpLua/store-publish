@@ -47,6 +47,7 @@ walking up from the working directory, or takes `--config PATH`.
 | `readme` | File that carries the store table (default `README.md`) |
 | `lint.forbidden` | Extra words `lint` rejects, in addition to the built-in ones |
 | `lint.textFiles` | Source files whose string literals are public text (a screenshot harness with caption strings); every prose-looking literal gets the text rules |
+| `lint.packageScript` | The script that builds the store zips. `lint` fails when it neither reads `zipPrefix` from the config nor spells out `<zipPrefix>-`, so the zip names the upload commands look for are the ones the script writes |
 | `lint.brands` | Brand names `lint` rejects in public text. Default: Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla. Set `[]` to disable |
 | `stores.firefox.icon` | Listing icon for AMO (`firefox icon`), AMO shows its default icon until one is uploaded; the manifest icon is not used |
 | `stores.firefox.previews` | Listing screenshots for AMO in order (`firefox previews set`). `set` is idempotent and never deletes before uploading: a position whose image on AMO already has the file's pixel size is kept, missing or differently sized positions are uploaded, surplus positions are removed after the uploads; `--replace` re-uploads every position. AMO throttles image writes with 429 "Expected available in N seconds" (or Retry-After); the tool logs the wait, sleeps N+2 s and retries, up to 6 times and at most 30 min per wait, then fails with AMO's message |
@@ -90,9 +91,13 @@ store-publish config
 public listings and need no credentials (Chrome Web Store page, Edge
 `getproductdetailsbycrxid`, AMO public API). The review column and the
 credential check use the env vars when they are set and say "not in env"
-otherwise. `--markdown` prints a table with a timestamp and the generating
-command in a comment; paste that into documents instead of typing a version
-by hand.
+otherwise. Every row carries the dashboard link (for Chrome the item page under the
+publisher when `CWS_PUBLISHER_ID` is set, else the config's dashboard), and
+the Firefox row lists the AMO preview ids with their positions, the ids
+`firefox previews delete #id` takes. `--markdown` prints a table with a
+timestamp and the generating command in a comment; paste that into documents
+instead of typing a version by hand. `--json` carries `dashboard` and
+`previews` as fields.
 
 `version` reads every file in `versionFiles`, fails when they do not carry
 the same version (or when `--tag vX.Y.Z` names a different one), and prints
@@ -137,6 +142,13 @@ ends with a line that starts with `Applied with`.
 and for the files under `images`: a missing file, a PNG whose size differs
 from the declared one, and two files that are byte-identical (a tile that
 shows the wrong extension's logo has happened).
+
+Two more checks tie the config to the build: a manifest under `manifests`
+that carries `browser_specific_settings.gecko.id` must name `stores.firefox.id`
+(an upload under a different id lands on the wrong AMO listing), and
+`lint.packageScript`, when set, must build `<zipPrefix>-<kind>-<version>.zip`
+names, either by reading `zipPrefix` from the config or by spelling the prefix
+out.
 
 ### README table
 

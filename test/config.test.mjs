@@ -4,12 +4,12 @@ import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { findConfig, loadConfig, validate, zipPath } from "../src/config.mjs";
-import { lintImages, lintListing, lintManifests, lintTextFiles, pngSize, sectionText, stringLiterals, textProblems } from "../src/listing.mjs";
+import { lintImages, lintListing, lintManifests, lintPackageScript, lintTextFiles, pngSize, sectionText, stringLiterals, textProblems } from "../src/listing.mjs";
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
 import { checkVersions } from "../src/version.mjs";
 import { api as amoApi, bust, isDefaultIcon, previewPlan, throttleSeconds } from "../src/firefox.mjs";
-import { chromeLiveFromHtml, edgeLiveFromJson, firefoxLiveFromJson, hasEnv, renderStatus } from "../src/status.mjs";
+import { chromeDashboardUrl, chromeLiveFromHtml, edgeLiveFromJson, firefoxLiveFromJson, hasEnv, previewSummary, renderStatus } from "../src/status.mjs";
 
 const sample = {
   name: "demo",
@@ -149,17 +149,60 @@ test("status parsers read the public listings", () => {
   assert.deepEqual(chromeLiveFromHtml(html), { version: "0.0.7", updated: "August 2, 2026" });
   assert.deepEqual(chromeLiveFromHtml("<html></html>"), { version: null, updated: null });
   assert.deepEqual(edgeLiveFromJson({ version: "0.0.7", lastUpdateDate: 1788983347.44 }), { version: "0.0.7", updated: "2026-09-09" });
-  assert.deepEqual(firefoxLiveFromJson({ current_version: { version: "3.1.0" }, last_updated: "2026-09-12T08:41:41Z", status: "public" }), { version: "3.1.0", updated: "2026-09-12", status: "public" });
+  assert.deepEqual(firefoxLiveFromJson({ current_version: { version: "3.1.0" }, last_updated: "2026-09-12T08:41:41Z", status: "public" }), { version: "3.1.0", updated: "2026-09-12", status: "public", previews: [] });
+  const withPreviews = firefoxLiveFromJson({ current_version: { version: "3.2.1" }, previews: [{ id: 13, position: 1, image_size: [1280, 800] }, { id: 12, position: 0, image_size: [1280, 800] }, { id: 14 }] });
+  assert.deepEqual(withPreviews.previews, [{ id: 12, position: 0, size: "1280x800" }, { id: 14, position: null, size: null }, { id: 13, position: 1, size: "1280x800" }]);
+  assert.equal(previewSummary(withPreviews.previews), "previews #12 (0), #14, #13 (1)");
+  assert.equal(previewSummary([]), "");
   assert.equal(hasEnv("edge", { EDGE_API_KEY: "k", EDGE_CLIENT_ID: "c" }), true);
   assert.equal(hasEnv("edge", { EDGE_API_KEY: "k" }), false);
 });
 
 test("renderStatus stamps the table with time, command and config", () => {
   const cfg = { ...validate(structuredClone(sample)), path: "/x/store.config.json" };
-  const rows = [{ store: "Chrome Web Store", url: "https://c", live: "1.0.0", updated: "2026-09-01", review: "published 1.0.0 (PUBLISHED)", credentials: "accepted" }];
+  const rows = [
+    { store: "Chrome Web Store", url: "https://c", dashboard: "https://chrome.google.com/webstore/devconsole/pub/abc/edit/listing", live: "1.0.0", updated: "2026-09-01", review: "published 1.0.0 (PUBLISHED)", credentials: "accepted" },
+    { store: "Firefox Add-ons (AMO)", url: "https://f", live: "1.0.0", updated: "2026-09-01", review: "listing public; previews #12 (0), #13 (1)", credentials: "not in env" },
+  ];
   const md = renderStatus(cfg, rows, { now: new Date("2026-09-12T15:00:00Z") });
   assert.match(md, /^<!-- generated 2026-09-12T15:00:00.000Z by `store-publish status --markdown` from .*store\.config\.json \(demo\); regenerate, do not edit -->/);
-  assert.match(md, /\| \[Chrome Web Store\]\(https:\/\/c\) \| 1\.0\.0 \| 2026-09-01 \| published 1\.0\.0 \(PUBLISHED\) \| accepted \|/);
+  assert.match(md, /\| Store \| Live version \| Live since \| Review \/ submission \| API credentials \| Dashboard \|/);
+  assert.match(md, /\| \[Chrome Web Store\]\(https:\/\/c\) \| 1\.0\.0 \| 2026-09-01 \| published 1\.0\.0 \(PUBLISHED\) \| accepted \| \[open\]\(https:\/\/chrome\.google\.com\/webstore\/devconsole\/pub\/abc\/edit\/listing\) \|/);
+  assert.match(md, /\| \[Firefox Add-ons \(AMO\)\]\(https:\/\/f\) \| 1\.0\.0 \| 2026-09-01 \| listing public; previews #12 \(0\), #13 \(1\) \| not in env \|  \|/);
+});
+
+test("chromeDashboardUrl builds the item page from CWS_PUBLISHER_ID and falls back to the config", () => {
+  const cfg = validate(structuredClone(sample));
+  assert.equal(chromeDashboardUrl(cfg, { CWS_PUBLISHER_ID: "pub-1" }), "https://chrome.google.com/webstore/devconsole/pub-1/abc/edit/listing");
+  assert.equal(chromeDashboardUrl(cfg, {}), "https://cd");
+});
+
+test("lintManifests requires the gecko add-on id to equal stores.firefox.id", () => {
+  const root = mkdtempSync(join(tmpdir(), "store-publish-g-"));
+  writeFileSync(join(root, "manifest.firefox.json"), JSON.stringify({ name: "Demo", description: "Saves verified video.", browser_specific_settings: { gecko: { id: "x@y" } } }));
+  writeFileSync(join(root, "manifest.wrong.json"), JSON.stringify({ name: "Demo", description: "Saves verified video.", browser_specific_settings: { gecko: { id: "other@y" } } }));
+  writeFileSync(join(root, "manifest.json"), JSON.stringify({ name: "Demo", description: "Saves verified video." }));
+  const cfg = { ...validate({ ...structuredClone(sample), manifests: ["manifest.firefox.json", "manifest.wrong.json", "manifest.json"] }), root };
+  assert.deepEqual(lintManifests(cfg), [
+    'manifest.wrong.json: browser_specific_settings.gecko.id is "other@y", stores.firefox.id is "x@y"',
+  ]);
+});
+
+test("lint.packageScript must build <zipPrefix>-<kind>-<version>.zip names", () => {
+  const root = mkdtempSync(join(tmpdir(), "store-publish-z-"));
+  writeFileSync(join(root, "from-config.mjs"), 'const name = (kind) => `${config.zipPrefix}-${kind}-${version}.zip`;\n');
+  writeFileSync(join(root, "literal.mjs"), 'const out = resolve(root, `demo-${t.name}-${version}.zip`);\n');
+  writeFileSync(join(root, "wrong.mjs"), 'const out = resolve(root, `savemedia-${t.name}-${version}.zip`);\n');
+  writeFileSync(join(root, "none.mjs"), 'spawnSync("zip", ["-r", out, "."]);\n');
+  const lint = (packageScript) => lintPackageScript({ ...validate({ ...structuredClone(sample), lint: { packageScript } }), root });
+  assert.deepEqual(lint("from-config.mjs"), []);
+  assert.deepEqual(lint("literal.mjs"), []);
+  assert.deepEqual(lint("wrong.mjs"), ['wrong.mjs: builds "savemedia-<kind>-<version>.zip", expected "demo-<kind>-<version>.zip" (zipPrefix in store.config.json)']);
+  assert.deepEqual(lint("none.mjs"), ['none.mjs: neither reads zipPrefix from store.config.json nor spells out the prefix, expected "demo-<kind>-<version>.zip" (zipPrefix in store.config.json)']);
+  assert.deepEqual(lint("missing.mjs"), ["missing.mjs: package script not found"]);
+  assert.equal(validate(structuredClone(sample)).lint.packageScript, null);
+  assert.deepEqual(lintPackageScript({ ...validate(structuredClone(sample)), root }), []);
+  assert.throws(() => validate({ ...structuredClone(sample), lint: { packageScript: 7 } }), /lint\.packageScript/);
 });
 
 test("textProblems rejects dashes and emoji but not ordinary punctuation", () => {

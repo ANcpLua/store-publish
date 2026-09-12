@@ -6,7 +6,7 @@
   "versionFiles": ["manifest.json", "package.json", "package-lock.json"],
   "listing": "store/listing.md",
   "readme": "README.md",
-  "lint": { "forbidden": [] },
+  "lint": { "forbidden": [], "packageScript": "scripts/package.mjs" },
   "manifests": ["manifest.json"],
   "images": [
     { "path": "store/screenshots/01.png", "size": "1280x800" },

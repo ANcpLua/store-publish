@@ -56,9 +56,9 @@ ${list(edge.COMMANDS)}
 ${list(firefox.COMMANDS)}
   store-publish amo-listing <show|diff|apply>
 ${list(AMO_COMMANDS)}
-  store-publish lint                 listing sections, manifest name/description, string literals of lint.textFiles, store images: forbidden words, brand names, dashes, emoji, comma chains, missing or duplicate images
+  store-publish lint                 listing sections, manifest name/description, string literals of lint.textFiles, store images: forbidden words, brand names, dashes, emoji, comma chains, missing or duplicate images; manifest gecko id equals stores.firefox.id; lint.packageScript builds <zipPrefix>-<kind>-<version>.zip
   store-publish readme [--write|--check]   render the store table, write it into the README, or verify it
-  store-publish status [--markdown|--json]   live version of every store from the public listings, plus review state and credential check where env allows
+  store-publish status [--markdown|--json]   live version of every store from the public listings, dashboard link, AMO preview ids, plus review state and credential check where env allows
   store-publish version [--tag TAG]  fail unless every versionFiles entry (and the tag) carries the same version; prints it
   store-publish config               print the resolved configuration
 

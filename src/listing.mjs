@@ -61,9 +61,11 @@ export function runLint(cfg) {
   for (const p of lintManifests(cfg)) problems.push(p);
   for (const p of lintTextFiles(cfg)) problems.push(p);
   for (const p of lintImages(cfg)) problems.push(p);
-  const scope = [cfg.listing, ...cfg.manifests, ...cfg.lint.textFiles, cfg.images.length ? `${cfg.images.length} image(s)` : null].filter(Boolean).join(", ");
+  for (const p of lintPackageScript(cfg)) problems.push(p);
+  const scope = [cfg.listing, ...cfg.manifests, ...cfg.lint.textFiles, cfg.lint.packageScript, cfg.images.length ? `${cfg.images.length} image(s)` : null].filter(Boolean).join(", ");
   if (problems.length === 0) {
-    console.log(`✓ ${scope}: no forbidden words, brand names, dashes, emoji or comma chains; images present and distinct`);
+    const extras = [cfg.manifests.length ? "add-on id matches" : null, cfg.lint.packageScript ? "zip names follow zipPrefix" : null].filter(Boolean);
+    console.log(`✓ ${scope}: no forbidden words, brand names, dashes, emoji or comma chains; images present and distinct${extras.length ? `; ${extras.join("; ")}` : ""}`);
     return;
   }
   for (const p of problems) console.log(`✗ ${p}`);
@@ -91,7 +93,12 @@ export function textProblems(text, extraForbidden = [], brands = []) {
   return problems;
 }
 
-/** `manifests` in the config: name and description are store text too (the description is the store summary line). */
+/**
+ * `manifests` in the config: name and description are store text too (the
+ * description is the store summary line). A manifest that carries the
+ * Firefox add-on id (browser_specific_settings.gecko.id) must name the same
+ * add-on as stores.firefox.id, or the AMO upload lands on the wrong listing.
+ */
 export function lintManifests(cfg) {
   const problems = [];
   for (const file of cfg.manifests) {
@@ -111,8 +118,31 @@ export function lintManifests(cfg) {
       if (typeof json[field] !== "string") continue;
       for (const p of textProblems(json[field], cfg.lint.forbidden, cfg.lint.brands)) problems.push(`${file}: ${field}: ${p}`);
     }
+    const geckoId = json.browser_specific_settings?.gecko?.id;
+    if (geckoId !== undefined && geckoId !== cfg.stores.firefox.id) {
+      problems.push(`${file}: browser_specific_settings.gecko.id is "${geckoId}", stores.firefox.id is "${cfg.stores.firefox.id}"`);
+    }
   }
   return problems;
+}
+
+/**
+ * `lint.packageScript`: the script that builds the store zips. Its output
+ * names must be `<zipPrefix>-<kind>-<version>.zip`, which is what every
+ * upload command looks for. The script passes when it reads the prefix from
+ * store.config.json (the word zipPrefix appears) or spells out the literal
+ * `<zipPrefix>-`; a different literal prefix or none at all fails.
+ */
+export function lintPackageScript(cfg) {
+  const file = cfg.lint.packageScript;
+  if (!file) return [];
+  const path = resolve(cfg.root, file);
+  if (!existsSync(path)) return [`${file}: package script not found`];
+  const source = readFileSync(path, "utf8");
+  if (/\bzipPrefix\b/.test(source) || source.includes(`${cfg.zipPrefix}-`)) return [];
+  const literal = /["'`]([A-Za-z0-9_.]+)-(?:\$\{[^}]*\}|chrome|edge|firefox|source)-/.exec(source)?.[1];
+  const found = literal ? `builds "${literal}-<kind>-<version>.zip"` : "neither reads zipPrefix from store.config.json nor spells out the prefix";
+  return [`${file}: ${found}, expected "${cfg.zipPrefix}-<kind>-<version>.zip" (zipPrefix in store.config.json)`];
 }
 
 /**
