@@ -20,7 +20,7 @@ export const COMMANDS = {
   release: "upload, validate, create the version (--zip PATH, --notes \"text\", --source PATH)",
   status: "list the add-on's versions and their review status (read-only)",
   icon: "set the listing icon from stores.firefox.icon or PATH (AMO resizes to 32/64/128); --diff only reports",
-  previews: "list | set: replace the listing screenshots with stores.firefox.previews or PATHs, in order",
+  previews: "list | set: bring the listing screenshots to stores.firefox.previews (or PATHs), uploading only missing positions; --replace deletes and re-uploads everything",
 };
 
 export async function run(cfg, command, flags) {
@@ -134,11 +134,20 @@ export function isDefaultIcon(url) {
   return typeof url !== "string" || /\/addon-icons\/default-\d+\.png/.test(url);
 }
 
-/** Listing screenshots ("previews"). `set` deletes what is there and uploads the given files in order. */
+/**
+ * Listing screenshots ("previews"). AMO throttles preview writes hard (429
+ * "Expected available in N seconds", from 20 s up to 25 min, apparently a
+ * daily budget plus a burst limit), so `set` is idempotent and never deletes
+ * before it has uploaded: a position is kept when AMO already holds an image
+ * of the same pixel size there, uploaded when it is missing or the size
+ * differs, and surplus positions are removed only after every upload
+ * succeeded. A run that was cut off can simply be repeated. `--replace`
+ * re-uploads every position (for a changed image of the same size).
+ */
 async function previews(cfg, flags) {
   const slug = cfg.stores.firefox.slug;
   const [sub, ...paths] = flags._positional ?? [];
-  const current = (await api(`/addons/addon/${slug}/${bust()}`)).previews ?? [];
+  const current = sortedPreviews((await api(`/addons/addon/${slug}/${bust()}`)).previews ?? []);
   if (!sub || sub === "list") {
     if (current.length === 0) console.log("no previews");
     for (const p of current) console.log(`  #${p.id} position=${p.position} ${p.image_size?.join("x") ?? "?"} ${p.image_url}`);
@@ -147,32 +156,96 @@ async function previews(cfg, flags) {
   if (sub !== "set") throw new Error(`firefox previews: unknown subcommand ${sub} (list | set)`);
   const files = paths.length ? paths : (cfg.stores.firefox.previews ?? []);
   if (files.length === 0) throw new Error("no previews given: set stores.firefox.previews in store.config.json or pass PATHs");
-  for (const file of files) {
-    if (!existsSync(resolve(cfg.root, file))) throw new Error(`preview not found: ${file}`);
-  }
-  for (const p of current) {
-    await api(`/addons/addon/${slug}/previews/${p.id}/`, { method: "DELETE" });
-    console.log(`  removed #${p.id}`);
-  }
-  let position = 0;
-  for (const file of files) {
+  const wanted = files.map((file) => {
     const path = resolve(cfg.root, file);
+    if (!existsSync(path)) throw new Error(`preview not found: ${file}`);
+    const bytes = readFileSync(path);
+    return { file, path, bytes, size: pngSize(bytes) };
+  });
+  const plan = previewPlan(current, wanted.map((w) => w.size), Boolean(flags.replace));
+  for (const position of plan.upload) {
+    const w = wanted[position];
+    const stale = plan.stale.find((p) => p.position === position);
+    if (stale) {
+      await api(`/addons/addon/${slug}/previews/${stale.id}/`, { method: "DELETE" });
+      console.log(`  removed #${stale.id} at position ${position} (${stale.image_size?.join("x") ?? "?"} on AMO, ${w.size ?? "?"} in the repo)`);
+    }
     const form = new FormData();
-    form.append("image", new Blob([readFileSync(path)], { type: "image/png" }), basename(path));
-    form.append("position", String(position++));
+    form.append("image", new Blob([w.bytes], { type: "image/png" }), basename(w.path));
+    form.append("position", String(position));
     const created = await api(`/addons/addon/${slug}/previews/`, { method: "POST", body: form });
-    console.log(`  uploaded ${file} as #${created.id}`);
+    console.log(`  uploaded ${w.file} as #${created.id} (position ${position})`);
   }
+  for (const p of plan.remove) {
+    await api(`/addons/addon/${slug}/previews/${p.id}/`, { method: "DELETE" });
+    console.log(`  removed surplus #${p.id} (position ${p.position})`);
+  }
+  if (plan.upload.length === 0 && plan.remove.length === 0) console.log(`  nothing to do, ${files.length} preview(s) already in place`);
   const after = (await api(`/addons/addon/${slug}/${bust()}`)).previews ?? [];
   if (after.length !== files.length) throw new Error(`expected ${files.length} previews after upload, AMO reports ${after.length}`);
   console.log(`✓ ${files.length} preview(s) set`);
 }
 
-export async function api(path, init = {}) {
+function sortedPreviews(list) {
+  return [...list].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+}
+
+/** Width and height from the PNG IHDR chunk, "WxH", or null when not a PNG. */
+export function pngSize(bytes) {
+  if (bytes.length < 24 || bytes.subarray(0, 8).toString("latin1") !== "\x89PNG\r\n\x1a\n") return null;
+  return `${bytes.readUInt32BE(16)}x${bytes.readUInt32BE(20)}`;
+}
+
+/**
+ * Compare what AMO holds (sorted by position) with the wanted sizes per
+ * position. Returns positions to upload, the stale previews those uploads
+ * replace, and surplus previews to remove afterwards.
+ */
+export function previewPlan(current, wantedSizes, replace) {
+  const sorted = sortedPreviews(current);
+  const upload = [];
+  const stale = [];
+  for (let position = 0; position < wantedSizes.length; position++) {
+    const have = sorted[position];
+    if (!have) {
+      upload.push(position);
+      continue;
+    }
+    const haveSize = Array.isArray(have.image_size) ? have.image_size.join("x") : null;
+    if (replace || haveSize !== wantedSizes[position]) {
+      upload.push(position);
+      stale.push(have);
+    }
+  }
+  return { upload, stale, remove: sorted.slice(wantedSizes.length) };
+}
+
+/** Seconds AMO asks us to wait: the 429 detail ("Expected available in N seconds") or the Retry-After header. */
+export function throttleSeconds(text, retryAfter = null) {
+  const m = /Expected available in (\d+) seconds/.exec(text ?? "");
+  if (m) return Number(m[1]);
+  if (retryAfter !== null && /^\d+$/.test(String(retryAfter))) return Number(retryAfter);
+  return null;
+}
+
+const MAX_THROTTLE_WAIT_S = 30 * 60;
+const MAX_THROTTLE_RETRIES = 6;
+
+export async function api(path, init = {}, attempt = 0) {
   const res = await fetch(`${API_ROOT}${path}`, {
     ...init,
     headers: { Authorization: `JWT ${amoJwt(required("AMO_JWT_ISSUER"), required("AMO_JWT_SECRET"))}`, ...(init.headers ?? {}) },
   });
+  if (res.status === 429) {
+    const text = await res.text();
+    const wait = throttleSeconds(text, res.headers.get("retry-after"));
+    if (wait === null || wait > MAX_THROTTLE_WAIT_S || attempt >= MAX_THROTTLE_RETRIES) {
+      throw new Error(`${init.method ?? "GET"} ${path} throttled (429)${wait ? `, AMO asks for ${wait} s` : ""}: ${text}`);
+    }
+    console.log(`  AMO throttled ${init.method ?? "GET"} ${path}; waiting ${wait + 2} s (attempt ${attempt + 1}/${MAX_THROTTLE_RETRIES})`);
+    await sleep((wait + 2) * 1000);
+    return api(path, init, attempt + 1);
+  }
   if (!res.ok) throw new Error(`${init.method ?? "GET"} ${path} failed (${res.status}): ${await res.text()}`);
   if (res.status === 204) return {};
   return res.json();

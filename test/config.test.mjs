@@ -8,7 +8,7 @@ import { lintImages, lintListing, lintManifests, pngSize, sectionText, textProbl
 import { renderTable } from "../src/readme.mjs";
 import { daysUntil, parseArgs } from "../src/common.mjs";
 import { checkVersions } from "../src/version.mjs";
-import { bust, isDefaultIcon } from "../src/firefox.mjs";
+import { api as amoApi, bust, isDefaultIcon, previewPlan, throttleSeconds } from "../src/firefox.mjs";
 import { chromeLiveFromHtml, edgeLiveFromJson, firefoxLiveFromJson, hasEnv, renderStatus } from "../src/status.mjs";
 
 const sample = {
@@ -252,4 +252,45 @@ test("firefox module resolves asset paths against the config root (regression: r
 
 test("AMO reads carry a cache buster", () => {
   assert.match(bust(), /^\?_=\d{13,}$/);
+});
+
+test("previewPlan keeps same-size positions, uploads missing or different ones, removes surplus last", () => {
+  const cur = [{ id: 3, position: 1, image_size: [1280, 800] }, { id: 2, position: 0, image_size: [1280, 800] }, { id: 7, position: 2, image_size: [640, 400] }, { id: 9, position: 3, image_size: [1280, 800] }];
+  assert.deepEqual(previewPlan([], ["1280x800", "1280x800"], false), { upload: [0, 1], stale: [], remove: [] });
+  const plan = previewPlan(cur, ["1280x800", "1280x800", "1280x800"], false);
+  assert.deepEqual(plan.upload, [2], "position 2 has the wrong size on AMO");
+  assert.deepEqual(plan.stale.map((p) => p.id), [7]);
+  assert.deepEqual(plan.remove.map((p) => p.id), [9], "surplus position 3");
+  const partial = previewPlan(cur.slice(0, 2), ["1280x800", "1280x800", "1280x800", "1280x800", "1280x800"], false);
+  assert.deepEqual(partial, { upload: [2, 3, 4], stale: [], remove: [] });
+  const all = previewPlan(cur, ["1280x800", "1280x800", "1280x800"], true);
+  assert.deepEqual(all.upload, [0, 1, 2]);
+  assert.deepEqual(all.stale.map((p) => p.id), [2, 3, 7]);
+  assert.deepEqual(all.remove.map((p) => p.id), [9]);
+});
+
+test("throttleSeconds parses AMO's 429 detail or Retry-After, and api waits then retries", async () => {
+  assert.equal(throttleSeconds('{"detail":"Request was throttled. Expected available in 689 seconds."}'), 689);
+  assert.equal(throttleSeconds("nope", "45"), 45);
+  assert.equal(throttleSeconds("nope"), null);
+  process.env.AMO_JWT_ISSUER = "user:1:1"; process.env.AMO_JWT_SECRET = "s";
+  const realFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls++;
+    if (calls === 1) return new Response('{"detail":"Request was throttled. Expected available in 0 seconds."}', { status: 429 });
+    return new Response('{"id":1}', { status: 201 });
+  };
+  try {
+    const started = Date.now();
+    const out = await amoApi("/addons/addon/x/previews/", { method: "POST" });
+    assert.deepEqual(out, { id: 1 });
+    assert.equal(calls, 2);
+    assert.ok(Date.now() - started >= 2000, "waited N+2 seconds");
+    globalThis.fetch = async () => new Response('{"detail":"Request was throttled. Expected available in 999999 seconds."}', { status: 429 });
+    await assert.rejects(amoApi("/addons/addon/x/", {}), /throttled \(429\), AMO asks for 999999 s: \{"detail":"Request was throttled\. Expected available in 999999 seconds\."\}/);
+  } finally {
+    globalThis.fetch = realFetch;
+    delete process.env.AMO_JWT_ISSUER; delete process.env.AMO_JWT_SECRET;
+  }
 });

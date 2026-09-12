@@ -15,11 +15,11 @@ Add it as a git dependency and pin a tag:
 
 ```sh
 # bun
-bun add -d "github:ANcpLua/store-publish#v1.4.2"
+bun add -d "github:ANcpLua/store-publish#v1.4.3"
 # pnpm
-pnpm add -D "github:ANcpLua/store-publish#v1.4.2"
+pnpm add -D "github:ANcpLua/store-publish#v1.4.3"
 # npm
-npm install -D "github:ANcpLua/store-publish#v1.4.2"
+npm install -D "github:ANcpLua/store-publish#v1.4.3"
 ```
 
 The package has no dependencies and needs Node 22.11 or newer. The binary is
@@ -44,7 +44,7 @@ walking up from the working directory, or takes `--config PATH`.
 | `lint.forbidden` | Extra words `lint` rejects, in addition to the built-in ones |
 | `lint.brands` | Brand names `lint` rejects in public text. Default: Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla. Set `[]` to disable |
 | `stores.firefox.icon` | Listing icon for AMO (`firefox icon`), AMO shows its default icon until one is uploaded; the manifest icon is not used |
-| `stores.firefox.previews` | Listing screenshots for AMO in order (`firefox previews set`) |
+| `stores.firefox.previews` | Listing screenshots for AMO in order (`firefox previews set`). `set` is idempotent and never deletes before uploading: a position whose image on AMO already has the file's pixel size is kept, missing or differently sized positions are uploaded, surplus positions are removed after the uploads; `--replace` re-uploads every position. AMO throttles image writes with 429 "Expected available in N seconds" (or Retry-After); the tool logs the wait, sleeps N+2 s and retries, up to 6 times and at most 30 min per wait, then fails with AMO's message |
 | `manifests` | Extension manifests whose `name` and `description` (the store summary line) `lint` checks with the text rules |
 | `images` | Store images `lint` requires: `"path"` or `{ "path", "size": "1280x800" }`; missing files, wrong PNG sizes and byte-identical pairs fail |
 | `stores.<store>.id` | Chrome item id, Edge product GUID, Firefox add-on id |
@@ -72,7 +72,7 @@ store-publish chrome  update|publish|release|status   [--zip PATH] [--item ID]
 store-publish edge    update|publish|release|status   [--zip PATH] [--notes TEXT]
 store-publish firefox upload|release|status           [--zip PATH] [--channel listed|unlisted] [--notes TEXT] [--source [PATH]]
 store-publish firefox icon [PATH] [--diff]
-store-publish firefox previews list | set [PATH...]
+store-publish firefox previews list | set [PATH...] [--replace]
 store-publish amo-listing show|diff|apply
 store-publish lint
 store-publish readme [--write|--check]
