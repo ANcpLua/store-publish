@@ -32,7 +32,8 @@ force push, diff before apply, trash instead of rm.
 ## Tool limits
 
 - One Playwright browser instance is shared by every session on this machine.
-  Only the coordinator drives it; other agents deliver file paths and the slot
+  One session drives it at a time (the coordinator while one exists, otherwise
+  AgentA); other agents deliver file paths and the slot
   assignment (which file goes into which dashboard field) and never click.
   File uploads through Playwright work only from its allowed roots
   (~/Developer/store-publish and its .playwright-mcp).
@@ -120,7 +121,8 @@ force push, diff before apply, trash instead of rm.
 [DONE]    1.0.0 candidate on main (version 1.0.0 in manifest and package.json, commit d290cb4), zips and checklist placed for the owner: /Users/ancplua/Developer/save-media/savemedia-{chrome,edge,firefox}-1.0.0.zip and PRUEFLISTE-1.0.0.md   Evidence: tests core 138 / extension 254 / native host 38, zips 1175053 / 1175053 / 1169074 bytes, ci run 34712261874 green
 [DONE]    Screenshot captions cleaned: 03 said "never bypassed" (commit 33370e7), 02 had an em dash (next commit); images regenerated at v1.0.0 with the Local downloader row, so they belong to the 1.0.0 submission only   Evidence: lint.textFiles on the harness (store-publish v1.5.0) is red on the old text and green now
 [PENDING] Chrome and AMO still serve the 0.0.7 images with the old captions (Chrome: screenshot 3 removed by the coordinator, 1 and 2 kept; AMO: #408167-408169)   waits on: AMO delete of position 2 on 2026-09-13 after 09:00 UTC, then the 1.0.0 submission with amo-previews-replace
-[AMBIG]   Em dash in screenshot 2 of the running Chrome submission and on AMO   Options: cancel a third time today | replace with 1.0.0   Decision (coordinator, 2026-09-12): replace with 1.0.0. Known deviation from our own text rule only, no store rule; expires with the 1.0.0 submission
+[DONE]    Owner overruled the em-dash deviation (coordinator session ended): Chrome review cancelled and resubmitted with three regenerated screenshots (0.0.7 footer, captions "refused" and comma instead of em dash), store icon and tile unchanged, description 926 chars, auto-publish on   Evidence: dashboard reload showed Screenshot 1-3 after Save draft; store-status run 34712923084 at 19:02 UTC: published 0.0.7 PUBLISHED, submitted 0.0.7 PENDING_REVIEW. Coordinator session is gone; AgentA drives Playwright again
+[PENDING] AMO: the same three regenerated 0.0.7 images should replace #408167-408169 (amo-previews-replace, three writes) once the daily cap is free   waits on: 2026-09-13 after 09:00 UTC; the 1.0.0 images come with the 1.0.0 submission
 [DONE]    Dependency upgrade PR #19 (Vite 8.3.0, Vitest 5.0.0, zod 4.6.2, TypeScript 7.0.2, Playwright 1.63.0, @types/chrome 0.2.9, @vitejs/plugin-react 6.1.1; branch claude/deps-2026-09)   waits on: the coordinator's merge decision. Evidence: ci run 34711862023 green on all five jobs; local e2e chromium 31 and firefox-fixtures 11 passed; typecheck 1.80 s -> 0.36 s; content scripts 5614/7189 bytes (oxc minifier, no zod inside); zips chrome/edge 1211746 -> 1174315, firefox 1204951 -> 1168406
 [DONE]    Filenames: no more "_.mp4" (Unicode letters kept, fallback chain title -> URL segment -> host -> video) and "+" read as space in space-less titles   Evidence: commits 8647220 and 615a08f, ci runs 34711678332 and 34711867949 green; ships with 1.0.0
 [DONE]    Dependabot weekly (bun + github-actions, groups minor-and-patch auto-merged after a green ci run, major manual), Renovate switched off   Evidence: save-media 21cc858, store-publish a35bd3f (auto-merge enabled on the repo); yt-transcript handed to AgentB with the file text
