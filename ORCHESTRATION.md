@@ -72,6 +72,10 @@ force push, diff before apply, trash instead of rm.
   buster (`?_=<timestamp>`) can be six minutes stale and shows an icon or
   previews change as not applied. store-publish appends one on every
   read-back and in `status` since v1.4.2.
+- AMO throttles preview writes: after one preview upload a caption PATCH
+  answered HTTP 429 "Expected available in 689 seconds" (AgentB, 2026-09-12).
+  Do not repeat `firefox previews set` within twelve minutes; a run that was
+  cut off can leave a caption-less preview, the next `set` replaces it.
 - Credentials: never regenerate a key to fix a 401. AMO has one key pair per
   account shared by both repositories; a new one invalidates the old one
   everywhere. Store secrets can only be exercised in a workflow run.
@@ -123,7 +127,7 @@ force push, diff before apply, trash instead of rm.
 ```
 [DONE]    v1.3.0: lint covers dashes, emoji, manifest name/description, store images (presence, PNG size, duplicates)   Evidence: node --test 17 pass; save-media lint green with manifests and 6 images; yt-transcript manifests red as expected
 [DONE]    v1.4.0/v1.4.1: lint.brands (default Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla), `firefox icon [PATH] [--diff]`, `firefox previews list|set`, config stores.firefox.icon/previews, .playwright-mcp untracked   Evidence: node --test 20 pass; save-media lint green after moving an editorial note out of a public section; yt-transcript listing.md reports "Chrome" and "Firefox" (lines 46, 48) through a scratch config
-[PENDING] yt-transcript lifts its pin to v1.4.1   waits on: AgentB (announced)
+[DONE]    yt-transcript pinned at v1.4.1, interim scripts dropped, store-status.yml runs firefox icon/previews, lint.brands green   Evidence: reported by AgentB 2026-09-12; v1.4.2 (cache buster only) still to pin
 ```
 
 ## Store state (generated)
