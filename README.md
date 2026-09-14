@@ -1,180 +1,45 @@
 # store-publish
 
-One command-line tool that uploads, publishes and inspects a browser extension
-on the Chrome Web Store, Microsoft Edge Add-ons and Firefox Add-ons (AMO). Every
-extension-specific value comes from a `store.config.json` in the extension
-repository, so the same tool serves every extension and a new extension only
-copies the config file and changes the ids.
+CLI for uploading browser extensions to the three stores, driven by the
+`store.config.json` in each extension repo. `bunx store-publish help` lists the
+commands. Below are only the pages that are done by hand.
 
-Used by [save-media](https://github.com/ANcpLua/save-media) and
-[yt-transcript](https://github.com/ANcpLua/yt-transcript).
+## Video Transcript (yt-transcript)
 
-All six targets (two extensions, three stores each), how to obtain API access
-per store, and the current policy and guide links are in
-[docs/PUBLISHING.md](docs/PUBLISHING.md).
+| Store | Edit | Public listing |
+| --- | --- | --- |
+| Chrome | [Store listing](https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/listing) · [Privacy](https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/privacy) · [Package](https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/ahddbfbjafmbceehebpeanpnlbaimepk/edit/package) | [chromewebstore.google.com](https://chromewebstore.google.com/detail/ahddbfbjafmbceehebpeanpnlbaimepk) |
+| Edge | [Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/069ca91d-a7cd-4bac-8224-1ee38a2d2a06/packages/dashboard) | [microsoftedge.microsoft.com](https://microsoftedge.microsoft.com/addons/detail/video-transcript/jkcfajddmmeapfabpoekfiemnbdaofeo) |
+| Firefox | [Developer Hub](https://addons.mozilla.org/developers/addon/video-transcript/edit) · [Versions](https://addons.mozilla.org/developers/addon/video-transcript/versions) | [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/video-transcript/) |
 
-## Install
+Privacy policy: https://gist.github.com/ANcpLua/8fb1ab3a839d008ef8fb4bd3a8a48adb
 
-Add it as a git dependency and pin a tag:
+## savemedia (save-media)
 
-```sh
-# bun
-bun add -d "github:ANcpLua/store-publish#v1.5.0"
-# pnpm
-pnpm add -D "github:ANcpLua/store-publish#v1.5.0"
-# npm
-npm install -D "github:ANcpLua/store-publish#v1.5.0"
-```
+| Store | Edit | Public listing |
+| --- | --- | --- |
+| Chrome | [Store listing](https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/negbodmpgjhkacmdkbfdpocjanaklifn/edit/listing) · [Privacy](https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/negbodmpgjhkacmdkbfdpocjanaklifn/edit/privacy) · [Package](https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233/negbodmpgjhkacmdkbfdpocjanaklifn/edit/package) | [chromewebstore.google.com](https://chromewebstore.google.com/detail/savemedia/negbodmpgjhkacmdkbfdpocjanaklifn) |
+| Edge | [Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/214e0682-5cde-4319-9608-ed25de6643b7/packages/dashboard) | [microsoftedge.microsoft.com](https://microsoftedge.microsoft.com/addons/detail/savemedia/mmkdllnjmommekajhadhokanofjlglhk) |
+| Firefox | [Developer Hub](https://addons.mozilla.org/developers/addon/save-media/edit) · [Versions](https://addons.mozilla.org/developers/addon/save-media/versions) | [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/save-media/) |
 
-The package has no dependencies and needs Node 22.11 or newer. The binary is
-`store-publish`; run it with `bunx`, `pnpm exec`, `npx`, or through a package
-script.
+Privacy policy: https://github.com/ANcpLua/save-media/blob/main/docs/privacy-policy.md
 
-## Configure
+## Accounts and keys
 
-Copy [`store.config.example.json`](store.config.example.json) to the repository
-root as `store.config.json` and fill in the ids. The tool finds the file by
-walking up from the working directory, or takes `--config PATH`.
-
-| Field | Meaning |
+| What | Where |
 | --- | --- |
-| `name` | Extension name, informational |
-| `zipPrefix` | Store zips are `<zipPrefix>-<chrome\|edge\|firefox\|source>-<version>.zip` |
-| `zipDir` | Directory the zips are built into, relative to the config (default `.`) |
-| `versionFrom` | JSON file whose `version` field names the release (usually the manifest) |
-| `versionFiles` | Every JSON file that carries the version (manifests, package.json, package-lock.json). `version` fails when they disagree. `versionFrom` is always included |
-| `listing` | Markdown file with the store text, see below |
-| `readme` | File that carries the store table (default `README.md`) |
-| `lint.forbidden` | Extra words `lint` rejects, in addition to the built-in ones |
-| `lint.textFiles` | Source files whose string literals are public text (a screenshot harness with caption strings); every prose-looking literal gets the text rules |
-| `lint.packageScript` | The script that builds the store zips. `lint` fails when it neither reads `zipPrefix` from the config nor spells out `<zipPrefix>-`, so the zip names the upload commands look for are the ones the script writes |
-| `lint.brands` | Brand names `lint` rejects in public text. Default: Chrome, Firefox, Edge, YouTube, Vimeo, Google, Microsoft, Mozilla. Set `[]` to disable |
-| `stores.firefox.icon` | Listing icon for AMO (`firefox icon`), AMO shows its default icon until one is uploaded; the manifest icon is not used |
-| `stores.firefox.previews` | Listing screenshots for AMO in order (`firefox previews set`). `set` is idempotent and never deletes before uploading: a position whose image on AMO already has the file's pixel size is kept, missing or differently sized positions are uploaded, surplus positions are removed after the uploads; `--replace` re-uploads every position. AMO throttles image writes with 429 "Expected available in N seconds" (or Retry-After); the tool logs the wait, sleeps N+2 s and retries, up to 6 times and at most 30 min per wait, then fails with AMO's message |
-| `manifests` | Extension manifests whose `name` and `description` (the store summary line) `lint` checks with the text rules |
-| `images` | Store images `lint` requires: `"path"` or `{ "path", "size": "1280x800" }`; missing files, wrong PNG sizes and byte-identical pairs fail |
-| `stores.<store>.id` | Chrome item id, Edge product GUID, Firefox add-on id |
-| `stores.<store>.url` | Public listing |
-| `stores.<store>.dashboard` | Where a human edits the listing |
-| `stores.<store>.apiDocs` | The API the tool talks to |
-| `stores.<store>.env` | Names of the secrets the API needs. Must match the table below, the tool refuses anything else |
-| `stores.edge.crxId` | The id in the public Edge URL, differs from the product GUID |
-| `stores.edge.expires` | Expiry date of the Edge API key, `YYYY-MM-DD`. `edge status` and `status` count the days left; the README table prints the date only, so `readme --check` is stable from day to day |
-| `stores.firefox.slug` | The slug in the AMO URL, used by `amo-listing` |
-| `stores.<store>.notes` | Free text for the README table |
+| Chrome developer dashboard (all items) | https://chrome.google.com/webstore/devconsole/9684cc7a-0f18-4553-bff0-c7334aeef233 |
+| Chrome OAuth client (CWS_CLIENT_ID, CWS_CLIENT_SECRET) | https://console.cloud.google.com/auth/clients?project=uplifted-nuance-408417 |
+| Chrome refresh token (CWS_REFRESH_TOKEN) | https://developers.google.com/oauthplayground |
+| Edge Partner Center overview | https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview |
+| Edge API key (EDGE_API_KEY, EDGE_CLIENT_ID), expires 2026-11-21 | https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi |
+| Firefox developer hub | https://addons.mozilla.org/developers/ |
+| Firefox API key (AMO_JWT_ISSUER, AMO_JWT_SECRET), one pair for both extensions | https://addons.mozilla.org/en-US/developers/addon/api/key/ |
 
-Credentials are never in the config. They come from the environment:
+## Policies
 
-| Store | Environment variables |
-| --- | --- |
-| Chrome | `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`, `CWS_PUBLISHER_ID` |
-| Edge | `EDGE_API_KEY`, `EDGE_CLIENT_ID` |
-| Firefox | `AMO_JWT_ISSUER`, `AMO_JWT_SECRET` |
-
-## Commands
-
-```
-store-publish chrome  update|publish|release|status   [--zip PATH] [--item ID]
-store-publish edge    update|publish|release|status   [--zip PATH] [--notes TEXT]
-store-publish firefox upload|release|status           [--zip PATH] [--channel listed|unlisted] [--notes TEXT] [--source [PATH]]
-store-publish firefox icon [PATH] [--diff]
-store-publish firefox previews list | set [PATH...] [--replace] | delete <position|#id>
-store-publish amo-listing show|diff|apply
-store-publish lint
-store-publish readme [--write|--check]
-store-publish version [--tag TAG]
-store-publish status [--markdown|--json]
-store-publish config
-```
-
-`status` asks every store at once. The live version and date come from the
-public listings and need no credentials (Chrome Web Store page, Edge
-`getproductdetailsbycrxid`, AMO public API). The review column and the
-credential check use the env vars when they are set and say "not in env"
-otherwise. Every row carries the dashboard link (for Chrome the item page under the
-publisher when `CWS_PUBLISHER_ID` is set, else the config's dashboard), and
-the Firefox row lists the AMO preview ids with their positions, the ids
-`firefox previews delete #id` takes. `--markdown` prints a table with a
-timestamp and the generating command in a comment; paste that into documents
-instead of typing a version by hand. `--json` carries `dashboard` and
-`previews` as fields.
-
-`version` reads every file in `versionFiles`, fails when they do not carry
-the same version (or when `--tag vX.Y.Z` names a different one), and prints
-the version on stdout so a workflow can capture it:
-
-```yaml
-- id: v
-  run: echo "version=$(bunx store-publish version --tag "$GITHUB_REF_NAME")" >> "$GITHUB_OUTPUT"
-```
-
-`release` is upload followed by publish. `status` is read-only everywhere:
-Chrome returns the item's review state, Firefox lists versions with their
-review status, Edge has no read endpoint so `status` probes the credentials
-with an operation id that cannot exist (401 means rejected, anything else means
-accepted), prints the lengths of the three values so a mangled secret is
-visible, and prints how many days the API key has left.
-
-Every store only updates an existing listing. The first submission, the
-listing text on Chrome and Edge, screenshots and privacy answers are done in the
-dashboards.
-
-### Listing file
-
-`listing` is a markdown file. Sections whose heading contains "description" or
-"summary" are public text; everything else is editorial. `amo-listing` writes
-the `## AMO description` section to AMO, under the locale the add-on was
-created with (never a hardcoded one, that would add a second translation and
-leave the served one untouched). An editorial note at the top of the section
-ends with a line that starts with `Applied with`.
-
-`lint` rejects, in the public sections and in every manifest `name` and
-`description` listed under `manifests`:
-
-- the words "bypass", "unlock", "circumvent" and their inflections, even inside
-  a negation, plus anything in `lint.forbidden`
-- brand names from `lint.brands` ("Chrome's built-in AI" is nominative use and
-  still the kind of text that gets a trademark complaint)
-- em dashes and en dashes (U+2014, U+2013) and emoji
-- a run of five or more comma-separated items of up to three words each, the
-  pattern the Chrome Web Store rejects as keyword spam
-
-and for the files under `images`: a missing file, a PNG whose size differs
-from the declared one, and two files that are byte-identical (a tile that
-shows the wrong extension's logo has happened).
-
-Two more checks tie the config to the build: a manifest under `manifests`
-that carries `browser_specific_settings.gecko.id` must name `stores.firefox.id`
-(an upload under a different id lands on the wrong AMO listing), and
-`lint.packageScript`, when set, must build `<zipPrefix>-<kind>-<version>.zip`
-names, either by reading `zipPrefix` from the config or by spelling the prefix
-out.
-
-### README table
-
-`store-publish readme --write` renders one table from the config and puts it
-between `<!-- store-config:start -->` and `<!-- store-config:end -->` in the
-README. `--check` fails when the README is stale, for CI.
-
-## Workflow sketch
-
-```yaml
-- run: bun install --frozen-lockfile
-- run: bunx store-publish lint
-- run: bunx store-publish readme --check
-- run: bunx store-publish chrome release
-  env:
-    CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
-    CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
-    CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
-    CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
-```
-
-## Releasing this tool
-
-Bump `version` in `package.json`, commit, tag `vX.Y.Z`, push the tag. Consumers
-pin the tag in their `package.json`.
-
-## License
-
-Apache-2.0
+| Store | Policy | Publishing guide |
+| --- | --- | --- |
+| Chrome | https://developer.chrome.com/docs/webstore/program-policies | https://developer.chrome.com/docs/webstore/best-listing |
+| Edge | https://learn.microsoft.com/en-us/legal/microsoft-edge/extensions/developer-policies | https://learn.microsoft.com/en-us/microsoft-edge/extensions/publish/publish-extension |
+| Firefox | https://extensionworkshop.com/documentation/publish/add-on-policies/ | https://extensionworkshop.com/documentation/publish/submitting-an-add-on/ |
