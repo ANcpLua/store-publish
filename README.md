@@ -59,7 +59,7 @@ walking up from the working directory, or takes `--config PATH`.
 | `stores.<store>.apiDocs` | The API the tool talks to |
 | `stores.<store>.env` | Names of the secrets the API needs. Must match the table below, the tool refuses anything else |
 | `stores.edge.crxId` | The id in the public Edge URL, differs from the product GUID |
-| `stores.edge.expires` | Expiry date of the Edge API key, `YYYY-MM-DD`. `edge status` fails once it has passed |
+| `stores.edge.expires` | Expiry date of the Edge API key, `YYYY-MM-DD`. `edge status` and `status` count the days left; the README table prints the date only, so `readme --check` is stable from day to day |
 | `stores.firefox.slug` | The slug in the AMO URL, used by `amo-listing` |
 | `stores.<store>.notes` | Free text for the README table |
 

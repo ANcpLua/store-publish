@@ -5,21 +5,25 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { daysUntil } from "./common.mjs";
 
 export const START = "<!-- store-config:start -->";
 export const END = "<!-- store-config:end -->";
 
 const LABEL = { chrome: "Chrome Web Store", edge: "Microsoft Edge Add-ons", firefox: "Firefox Add-ons (AMO)" };
 
-export function renderTable(cfg, now = new Date()) {
+/**
+ * The table must not change from one day to the next, or `readme --check`
+ * fails in CI on every run after the day it was written. The key expiry is
+ * printed as a date; the countdown lives in `status`.
+ */
+export function renderTable(cfg) {
   const rows = [
     "| Store | Listing | Dashboard | API docs | Credentials (GitHub Actions secrets) | Notes |",
     "| --- | --- | --- | --- | --- | --- |",
   ];
   for (const [store, s] of Object.entries(cfg.stores)) {
     const notes = [];
-    if (s.expires) notes.push(`API key expires ${s.expires} (${daysUntil(s.expires, now)} days from ${now.toISOString().slice(0, 10)})`);
+    if (s.expires) notes.push(`API key expires ${s.expires}`);
     if (s.notes) notes.push(s.notes);
     rows.push(`| ${LABEL[store]} | [${s.id}](${s.url}) | [dashboard](${s.dashboard}) | [docs](${s.apiDocs}) | ${s.env.map((e) => `\`${e}\``).join(", ")} | ${notes.join(". ")} |`);
   }

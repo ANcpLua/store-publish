@@ -105,11 +105,13 @@ test("lintListing honours extra forbidden words from the config", () => {
   assert.match(problems[0].message, /"Acme"/);
 });
 
-test("renderTable lists every store with its env names and the expiry countdown", () => {
+test("renderTable lists every store with its env names and the expiry date, and does not depend on today", () => {
   const cfg = validate(structuredClone(sample));
-  const table = renderTable(cfg, new Date("2026-09-12T10:00:00Z"));
+  const table = renderTable(cfg);
+  assert.equal(table, renderTable(cfg), "stable");
+  assert.doesNotMatch(table, /days from/);
   assert.match(table, /\| Chrome Web Store \| \[abc\]\(https:\/\/c\) \| \[dashboard\]\(https:\/\/cd\) \| \[docs\]\(https:\/\/ca\) \| `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN` \|  \|/);
-  assert.match(table, /API key expires 2026-11-21 \(70 days from 2026-09-12\)/);
+  assert.match(table, /\| API key expires 2026-11-21 \|/);
   assert.match(table, /Firefox Add-ons \(AMO\) \| \[x@y\]/);
 });
 
