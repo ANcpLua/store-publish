@@ -2,7 +2,25 @@
 
 CLI for uploading browser extensions to the three stores, driven by the
 `store.config.json` in each extension repo. `bunx store-publish help` lists the
-commands. Below are only the pages that are done by hand.
+commands.
+
+## Chrome, Firefox, and Edge
+
+The reusable [publishing skill](skills/chrome-firefox-edge/SKILL.md) covers
+setup, package and listing checks, submission, partial failures, credential
+maintenance, and verifying what is actually live. It includes the lessons
+from SaveMedia and Video Transcript: screenshots and unsupported claims need
+review even when validators pass, and a missing API does not make a dashboard
+task impossible to automate.
+
+Copy the whole `skills/chrome-firefox-edge` directory into the skill directory
+your agent loads, keeping its reference alongside it. It is also included in
+the CLI package. Invoke it as **Chrome, Firefox, and Edge** or
+`chrome-firefox-edge`.
+
+The [runbook](skills/chrome-firefox-edge/references/runbook.md) includes setup,
+commands, working workflow examples, and recovery. Use the extension's existing
+builds and credentials. The pages below are shortcuts for the current projects.
 
 ## Video Transcript (yt-transcript)
 
@@ -32,7 +50,7 @@ Privacy policy: https://github.com/ANcpLua/save-media/blob/main/docs/privacy-pol
 | Chrome OAuth client (CWS_CLIENT_ID, CWS_CLIENT_SECRET) | https://console.cloud.google.com/auth/clients?project=uplifted-nuance-408417 |
 | Chrome refresh token (CWS_REFRESH_TOKEN) | https://developers.google.com/oauthplayground |
 | Edge Partner Center overview | https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview |
-| Edge API key (EDGE_API_KEY, EDGE_CLIENT_ID), expires 2026-11-21 | https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi |
+| Edge API key (EDGE_API_KEY, EDGE_CLIENT_ID); expiry is recorded in each extension's store.config.json | https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi |
 | Firefox developer hub | https://addons.mozilla.org/developers/ |
 | Firefox API key (AMO_JWT_ISSUER, AMO_JWT_SECRET), one pair for both extensions | https://addons.mozilla.org/en-US/developers/addon/api/key/ |
 
